@@ -1,18 +1,33 @@
 // src/components/LeaveForm.jsx
-import  { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LeaveForm = () => {
-  const [leaveType, setLeaveType]   = useState('');
-  const [startDate, setStartDate]   = useState('');
-  const [endDate, setEndDate]       = useState('');
-  const [reason, setReason]         = useState('');
-  const navigate                  = useNavigate();
+  const [leaveType, setLeaveType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [reason, setReason] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Send the leave request data to your backend API.
-    navigate('/leave-history');
+    try {
+      const response = await fetch("http://localhost:5000/api/leave-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leaveType, startDate, endDate, reason }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert("Leave request submitted successfully");
+        navigate("/leave-history");
+      } else {
+        alert(data.error || "Failed to submit leave request");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while submitting leave request");
+    }
   };
 
   return (

@@ -1,31 +1,26 @@
 // src/components/LeaveHistory.jsx
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const LeaveHistory = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
 
   useEffect(() => {
-    // TODO: Replace with an API call to fetch leave history data.
-    // For demonstration, we use dummy data.
-    const dummyData = [
-      {
-        id: 1,
-        leaveType: 'Vacation',
-        startDate: '2023-05-01',
-        endDate: '2023-05-05',
-        reason: 'Family trip',
-        status: 'approved'
-      },
-      {
-        id: 2,
-        leaveType: 'Sick Leave',
-        startDate: '2023-06-10',
-        endDate: '2023-06-12',
-        reason: 'Medical reasons',
-        status: 'pending'
+    const fetchLeaveHistory = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/leave-requests");
+        const data = await response.json();
+        if (response.ok) {
+          setLeaveRequests(data);
+        } else {
+          alert(data.error || "Failed to fetch leave history");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching leave history");
       }
-    ];
-    setLeaveRequests(dummyData);
+    };
+
+    fetchLeaveHistory();
   }, []);
 
   return (

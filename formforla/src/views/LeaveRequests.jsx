@@ -15,7 +15,7 @@ const LeaveRequests = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch("http://localhost:5000/leave-requests");
+        const response = await fetch("http://localhost:5000/api/leave-requests");
         const data = await response.json();
         if (response.ok) {
           setRequests(data);
