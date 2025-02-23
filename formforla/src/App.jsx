@@ -7,7 +7,8 @@ import EmployeeHome from './views/EmployeeHome';
 import LeaderHome from './views/LeaderHome';
 import LeaveForm from './views/LeaveForm';
 import LeaveHistory from './views/LeaveHistory';
-
+import CreateLeaveType from './views/CreateLeaveType';
+import LeaveRequests from './views/LeaveRequests';
 function App() {
   return (
     <Router>
@@ -19,6 +20,8 @@ function App() {
         <Route path="/leader-home" element={<LeaderHome />} />
         <Route path="/leave-form" element={<LeaveForm />} />
         <Route path="/leave-history" element={<LeaveHistory />} />
+        <Route path="/create-leave-type" element={<CreateLeaveType />} />
+        <Route path="/leave-requests" element={<LeaveRequests />} />
       </Routes>
     </Router>
   );

@@ -99,7 +99,6 @@ app.post("/login", (req, res) => {
   });
 });
 
-// find user by name
 app.get("/user/:name", (req, res) => {
   const name = req.params.name;
   connection.query("SELECT * FROM Users WHERE name = ?", [name], (err, results) => {
@@ -111,6 +110,73 @@ app.get("/user/:name", (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
     res.json(results[0]);
+  });
+});
+
+// In your index.js (or a dedicated routes file)
+
+app.get('/leave-requests', (req, res) => {
+  // Base query to join LeaveRequests with Users and LeaveTypes
+  let query = `
+    SELECT 
+      lr.id, 
+      lr.user_id, 
+      u.name AS user_name, 
+      lr.leave_type_id, 
+      lt.type_name, 
+      lr.start_date, 
+      lr.end_date, 
+      lr.reason, 
+      lr.status, 
+      lr.created_at
+    FROM LeaveRequests lr
+    LEFT JOIN Users u ON lr.user_id = u.id
+    LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
+  `;
+  
+  // Collect filter conditions and parameters
+  const { status, leaveType } = req.query;
+  const conditions = [];
+  const params = [];
+  
+  if (status) {
+    conditions.push("lr.status = ?");
+    params.push(status);
+  }
+  
+  if (leaveType) {
+    // Filter by leave type name. If you prefer filtering by leave_type_id, adjust accordingly.
+    conditions.push("lt.type_name = ?");
+    params.push(leaveType);
+  }
+  
+  // Add WHERE clause if any conditions exist
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+  
+  // Order results by creation date descending
+  query += " ORDER BY lr.created_at DESC";
+  
+  // Execute the query
+  connection.query(query, params, (err, results) => {
+    if (err) {
+      console.error("Error fetching leave requests:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+// get all leave by user
+app.get('/leave-requests/:userId', (req, res) => {
+  const userId = req.params.userId;
+  connection.query("SELECT * FROM LeaveRequests WHERE user_id = ?", [userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
   });
 });
 
