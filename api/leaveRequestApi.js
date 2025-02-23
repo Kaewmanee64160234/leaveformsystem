@@ -82,12 +82,15 @@ router.get("/", (req, res) => {
     
     // Map each result to include leave type, start date, end date, reason, and status
     const filteredResults = results.map((r) => ({
+      id: r.id,
       leaveType: r.type_name,
       startDate: r.start_date,
       endDate: r.end_date,
       reason: r.reason,
-      status: r.status
+      status: r.status,
+      user_name: r.user_name,
     }));
+    console.log("filteredResults", filteredResults);
     
     res.json(filteredResults);
   });
@@ -162,19 +165,45 @@ router.get("/:id", (req, res) => {
 // PUT /:id endpoint
 router.put("/:id", (req, res) => {
   const { id } = req.params;
-  const { user_id, leave_type_id, start_date, end_date, reason, status } = req.body;
-  connection.query(
-    "UPDATE LeaveRequests SET user_id = ?, leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE id = ?",
-    [user_id, leave_type_id, start_date, end_date, reason, status, id],
-    (err, results) => {
-      if (err) {
-        console.error("Error updating leave request:", err);
-        return res.status(500).json({ error: "Database error" });
+  console.log("req.body", req.body);
+  console.log("req.params", req.params);
+  
+  
+  // If the request body contains only the "status" property, update only the status.
+  if (Object.keys(req.body).length === 1 && req.body.status) {
+    connection.query(
+      "UPDATE LeaveRequests SET status = ? WHERE id = ?",
+      [req.body.status, id],
+      (err, results) => {
+        if (err) {
+          console.error("Error updating leave request status:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        console.log("UPDATE LeaveRequests SET status = ? WHERE id = ?", [req.body.status, id]);
+        res.json({ message: "Leave request status updated" });
       }
-      res.json({ message: "Leave request updated" });
-    }
-  );
+    );
+  } else {
+    // Otherwise, update all fields (if needed)
+    const { user_id, leave_type_id, start_date, end_date, reason, status } = req.body;
+    connection.query(
+      "UPDATE LeaveRequests SET user_id = ?, leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE id = ?",
+      [user_id, leave_type_id, start_date, end_date, reason, status, id],
+      (err, results) => {
+        if (err) {
+          console.error("Error updating leave request:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        console.log(
+          "UPDATE LeaveRequests SET user_id = ?, leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE id = ?",
+          [user_id, leave_type_id, start_date, end_date, reason, status, id]
+        );
+        res.json({ message: "Leave request updated" });
+      }
+    );
+  }
 });
+
 
 // DELETE /:id endpoint
 router.delete("/:id", (req, res) => {
