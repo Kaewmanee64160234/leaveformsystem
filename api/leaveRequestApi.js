@@ -217,4 +217,70 @@ router.delete("/:id", (req, res) => {
   });
 });
 
+router.get("/user/:id", (req, res) => {
+  const { id } = req.params;
+  const query = `
+    SELECT 
+      lr.id, 
+      lt.type_name AS leaveType, 
+      lr.start_date, 
+      lr.end_date, 
+      lr.reason, 
+      lr.status,
+      lr.manager_id,
+      u.name AS approved_by
+    FROM LeaveRequests lr
+    LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
+    LEFT JOIN Users u ON lr.manager_id = u.id
+    WHERE lr.user_id = ?
+    ORDER BY lr.start_date DESC
+  `;
+
+  connection.query(query, [id], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    console.log("results", results);
+    
+    res.json(results);
+  });
+});
+
+router.get("/history/:manager_id", (req, res) => {
+  const { manager_id } = req.params;
+  
+  const query = `
+    SELECT 
+      lr.id, 
+      lr.user_id, 
+      u.name AS user_name, 
+      lr.leave_type_id, 
+      lt.type_name AS leaveType, 
+      lr.start_date, 
+      lr.end_date, 
+      lr.reason, 
+      lr.status, 
+      lr.created_at,
+      lr.manager_id
+    FROM LeaveRequests lr
+    LEFT JOIN Users u ON lr.user_id = u.id
+    LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
+    WHERE lr.manager_id = ? 
+    AND lr.status IN ('approved', 'rejected') 
+    AND TIMESTAMPDIFF(HOUR, lr.created_at, NOW()) <= 24
+    ORDER BY lr.created_at DESC
+  `;
+
+  connection.query(query, [manager_id], (err, results) => {
+    if (err) {
+      console.error("Error fetching confirmed leave requests:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    res.json(results);
+  });
+});
+
+
+
 module.exports = router;

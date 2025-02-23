@@ -17,17 +17,17 @@ const NavBar = () => {
   // Define base menu items (accessible by everyone)
   const baseMenu = [
     { path: "/", label: "Home" },
-    { path: "/create-leave-request", label: "Apply Leave" },
-    { path: "/history-leave", label: "History Leave" },
-    { path: "/user-profile", label: "User Profile" }
+    { path: "/create-leave-request", label: "ใบขอการลา" },
+    { path: "/history-leave", label: "ประวัติการลา" },
+    { path: "/user-profile", label: "ข้อมูลส่วนตัว" }
   ];
 
   // Define additional items for Leaders/Managers
   const leaderMenu = [
-    { path: "/leave-history", label: "Leave History" },
-    { path: "/history-confirm", label: "History Confirm" },
-    { path: "/type-leave", label: "Type Leave" },
-    { path: "/static-board-leave", label: "Static Board Leave" }
+    { path: "/leave-history", label: "คำร้องการลา" },
+    { path: "/history-confirm", label: "ประวัติยืนยันการลา" },
+    { path: "/type-leave", label: "ประเภทการลา" },
+    { path: "/static-board-leave", label: "สถิติการลา" }
   ];
 
   const handleLogout = () => {

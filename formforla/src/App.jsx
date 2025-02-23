@@ -5,7 +5,7 @@ import Register from "./views/user/Register";
 import HomePage from "./views/Homepage";
 import HistoryLeave from "./views/leaveMangement/HistoryLeave";
 import LeaveHistory from "./views/leaveMangement/LeaveHistory";
-import HistoryConfirm from "./views/HistoryConfirm";
+import HistoryConfirm from "./views/leaveMangement/HistoryConfirm";
 import CreateLeaveRequest from "./views/leaveMangement/CreateLeaveRequest";
 import TypeLeave from "./views/TypeLeave";
 import UserProfile from "./views/user/UserProfile";
