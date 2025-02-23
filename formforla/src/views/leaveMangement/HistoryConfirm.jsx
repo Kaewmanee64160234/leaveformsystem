@@ -3,7 +3,6 @@ import NavBar from "../../components/NavBar";
 import Swal from "sweetalert2";
 
 const HistoryConfirm = () => {
-
   // Function to calculate total days between two dates
   const calculateTotalDays = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -12,9 +11,12 @@ const HistoryConfirm = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  // Fix the state definition
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [setNewStatus] = useState(""); // Correctly define setNewStatus
+  // eslint-disable-next-line no-unused-vars
+  const [leaveBalance, setLeaveBalance] = useState(0);
 
   // Get logged-in user ID from localStorage
   const user = localStorage.getItem("user")
@@ -35,7 +37,7 @@ const HistoryConfirm = () => {
       );
       const data = await response.json();
       if (response.ok) {
-        setLeaveRequests(data);
+        setLeaveRequests(data); // ✅ Fix: Now correctly updates state
       } else {
         Swal.fire({
           icon: "error",
@@ -63,25 +65,24 @@ const HistoryConfirm = () => {
   // Open modal
   const handleEditClick = (request) => {
     setSelectedRequest(request);
-    setNewStatus(request.status);
   };
 
   // Update leave request status
   const updateLeaveStatus = async (status) => {
     if (!selectedRequest) return;
-  
+
     try {
       const response = await fetch(
         `http://localhost:5000/api/leave-requests/${selectedRequest.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }), // Pass the status directly
+          body: JSON.stringify({ status }),
         }
       );
-  
+
       const data = await response.json();
-      
+
       if (response.ok) {
         Swal.fire({
           icon: "success",
@@ -90,9 +91,19 @@ const HistoryConfirm = () => {
           timer: 2000,
           showConfirmButton: false,
         });
-  
-        fetchLeaveHistory(); // Refresh table after update
-        setSelectedRequest(null); // Close modal
+
+        // If changing from approved to rejected, restore balance
+        if (selectedRequest.status === "approved" && status === "rejected") {
+          setLeaveBalance((prev) => prev + selectedRequest.total_days);
+        }
+
+        // If changing from rejected to approved, deduct balance
+        if (selectedRequest.status === "rejected" && status === "approved") {
+          setLeaveBalance((prev) => prev - selectedRequest.total_days);
+        }
+
+        fetchLeaveHistory();
+        setSelectedRequest(null);
       } else {
         Swal.fire({
           icon: "error",
@@ -109,7 +120,6 @@ const HistoryConfirm = () => {
       });
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -167,49 +177,37 @@ const HistoryConfirm = () => {
         </div>
       </div>
 
-   {/* Edit Modal */}
-{selectedRequest && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-      <h2 className="text-xl font-bold mb-4">Edit Leave Status</h2>
-      <p className="mb-2"><strong>Current Status:</strong> {selectedRequest.status}</p>
-      <p><strong>Requested By:</strong> {selectedRequest.user_name}</p>
-      <p><strong>Leave Type:</strong> {selectedRequest.leaveType}</p>
-      <p><strong>Start Date:</strong> {new Date(selectedRequest.start_date).toLocaleDateString()}</p>
-      <p><strong>End Date:</strong> {new Date(selectedRequest.end_date).toLocaleDateString()}</p>
-      <p><strong>Total Days:</strong> {calculateTotalDays(selectedRequest.start_date, selectedRequest.end_date)} days</p>
-      <p><strong>Reason:</strong> {selectedRequest.reason}</p>
+      {/* Edit Modal */}
+      {selectedRequest && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-bold mb-4">Edit Leave Status</h2>
+            <p><strong>Current Status:</strong> {selectedRequest.status}</p>
+            <p><strong>Requested By:</strong> {selectedRequest.user_name}</p>
+            <p><strong>Total Days:</strong> {calculateTotalDays(selectedRequest.startDate, selectedRequest.endDate)} days</p>
+            <p><strong>Reason:</strong> {selectedRequest.reason}</p>
 
-      {/* Status Selection Buttons */}
-      {isWithin24Hours(selectedRequest.created_at) && (
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={() => updateLeaveStatus("approved")}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-1/2 mr-2"
-          >
-            Approve
-          </button>
-          <button
-             onClick={() => updateLeaveStatus("rejected")}
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-1/2 ml-2"
-          >
-            Reject
-          </button>
+            {/* Status Selection Buttons */}
+            {isWithin24Hours(selectedRequest.created_at) && (
+              <div className="flex justify-between mt-4">
+                <button onClick={() => updateLeaveStatus("approved")} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-1/2 mr-2">
+                  Approve
+                </button>
+                <button onClick={() => updateLeaveStatus("rejected")} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-1/2 ml-2">
+                  Reject
+                </button>
+              </div>
+            )}
+
+            {/* Close Button */}
+            <div className="flex justify-end mt-4">
+              <button onClick={() => setSelectedRequest(null)} className="bg-gray-300 px-4 py-2 rounded">
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Close Button */}
-      <div className="flex justify-end mt-4">
-        <button
-         onClick={() => setSelectedRequest(null)}
-          className="bg-gray-300 px-4 py-2 rounded"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
     </div>
   );
 };

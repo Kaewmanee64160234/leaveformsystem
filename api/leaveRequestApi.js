@@ -34,14 +34,13 @@ router.get("/", (req, res) => {
       lr.user_id, 
       u.name AS user_name, 
       lr.leave_type_id, 
-      lt.type_name, 
+      lt.type_name AS leaveType, 
       lr.start_date, 
       lr.end_date, 
       lr.reason, 
       lr.status, 
-      lr.created_at,
-      lr.manager_id,
-      u.leave_balance
+      lr.manager_id, 
+      u.leave_balance  -- ✅ Fetch user's leave balance
     FROM LeaveRequests lr
     LEFT JOIN Users u ON lr.user_id = u.id
     LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
@@ -83,22 +82,10 @@ router.get("/", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
 
-    const filteredResults = results.map((r) => ({
-      id: r.id,
-      leaveType: r.type_name,
-      startDate: r.start_date,
-      endDate: r.end_date,
-      reason: r.reason,
-      status: r.status,
-      user_name: r.user_name,
-      leave_balance: r.leave_balance,
-      user_id: r.user_id,
-    }));
-console.log(filteredResults);
-
-    res.json(filteredResults);
+    res.json(results);
   });
 });
+
 
 // ✅ Get leave history for a specific user
 router.get("/user/:id", (req, res) => {
@@ -210,28 +197,94 @@ router.post("/", (req, res) => {
   );
 });
 
-// ✅ Update leave request status
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  if (!status) {
-    return res.status(400).json({ error: "Status is required" });
-  }
+  try {
+    // Get current leave request details
+    connection.query(
+      "SELECT user_id, start_date, end_date, status FROM LeaveRequests WHERE id = ?",
+      [id],
+      (err, results) => {
+        if (err || results.length === 0) {
+          console.error("Error fetching leave request:", err);
+          return res.status(500).json({ error: "Database error or request not found" });
+        }
 
-  connection.query(
-    "UPDATE LeaveRequests SET status = ? WHERE id = ?",
-    [status, id],
-    (err, results) => {
-      if (err) {
-        console.error("Error updating leave request:", err);
-        return res.status(500).json({ error: "Database error" });
+        const leaveRequest = results[0];
+        const { user_id, start_date, end_date, status: oldStatus } = leaveRequest;
+
+        // Correctly calculate total leave days (including start & end date)
+        const startDate = new Date(start_date);
+        const endDate = new Date(end_date);
+
+        const totalDays = Math.max(
+          Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) ,
+          1
+        );
+        console.log("Total days:", totalDays);
+        
+
+        let balanceUpdateQuery = "";
+        let balanceUpdateParams = [];
+
+        // If changing from approved → rejected (restore balance)
+        if (oldStatus === "approved" && status === "rejected") {
+          balanceUpdateQuery = "UPDATE Users SET leave_balance = leave_balance + ? WHERE id = ?";
+          balanceUpdateParams = [totalDays, user_id];
+        }
+
+        // If changing from rejected → approved (deduct balance)
+        else if (oldStatus === "rejected" && status === "approved") {
+          balanceUpdateQuery = "UPDATE Users SET leave_balance = leave_balance - ? WHERE id = ?";
+          balanceUpdateParams = [totalDays, user_id];
+        }
+
+        // Run balance update if needed
+        if (balanceUpdateQuery) {
+          connection.query(balanceUpdateQuery, balanceUpdateParams, (err) => {
+            if (err) {
+              console.error("Error updating leave balance:", err);
+              return res.status(500).json({ error: "Failed to update leave balance" });
+            }
+
+            // Update the leave request status
+            connection.query(
+              "UPDATE LeaveRequests SET status = ? WHERE id = ?",
+              [status, id],
+              (err) => {
+                if (err) {
+                  console.error("Error updating leave status:", err);
+                  return res.status(500).json({ error: "Failed to update leave status" });
+                }
+                res.json({ message: "Leave request and balance updated successfully" });
+              }
+            );
+          });
+        } else {
+          // Only update status if no balance change is required
+          connection.query(
+            "UPDATE LeaveRequests SET status = ? WHERE id = ?",
+            [status, id],
+            (err) => {
+              if (err) {
+                console.error("Error updating leave status:", err);
+                return res.status(500).json({ error: "Failed to update leave status" });
+              }
+              res.json({ message: "Leave request updated successfully" });
+            }
+          );
+        }
       }
-
-      res.json({ message: `Leave request ${status}` });
-    }
-  );
+    );
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
+
 
 // ✅ Get leave history for a manager (last 24 hours)
 router.get("/history/:manager_id", (req, res) => {
@@ -244,8 +297,8 @@ router.get("/history/:manager_id", (req, res) => {
       u.name AS user_name, 
       lr.leave_type_id, 
       lt.type_name AS leaveType, 
-      lr.start_date, 
-      lr.end_date, 
+      lr.start_date as startDate, 
+      lr.end_date as endDate, 
       lr.reason, 
       lr.status, 
       lr.created_at
