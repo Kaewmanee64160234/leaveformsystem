@@ -14,6 +14,7 @@ const HistoryConfirm = () => {
   };
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [newStatus, setNewStatus] = useState(""); // ✅ Ensure this is defined
 
 
