@@ -1,97 +1,60 @@
 import { useState, useEffect } from "react";
 import NavBar from "../../components/NavBar";
-import Swal from "sweetalert2";
 
 const UserProfile = () => {
   const [user, setUser] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [updatedUser, setUpdatedUser] = useState({ name: "", email: "", role: "" });
+  const [loading, setLoading] = useState(true);
 
-  // Load user from local storage
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      setUpdatedUser(parsedUser);
-    }
-  }, []);
+    const fetchUserProfile = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        const userData = storedUser ? JSON.parse(storedUser) : null;
+        
+        if (!userData) {
+          alert("Please log in first.");
+          return;
+        }
 
-  // Handle Input Change
-  const handleChange = (e) => {
-    setUpdatedUser({ ...updatedUser, [e.target.name]: e.target.value });
-  };
+        const response = await fetch(`http://localhost:5000/api/users/profile/${userData.id}`);
+        const data = await response.json();
 
-  // Handle Profile Update
-  const handleUpdate = async () => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/users/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUser),
-      });
-      const data = await response.json();
-
-      if (response.ok) {
-        Swal.fire({ icon: "success", title: "Profile Updated!" });
-        setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser)); // Update local storage
-        setEditing(false);
-      } else {
-        Swal.fire({ icon: "error", title: "Error", text: data.error || "Failed to update profile." });
+        if (response.ok) {
+          setUser(data);
+        } else {
+          alert(data.error || "Failed to fetch user profile.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred while fetching user profile.");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Update error:", error);
-      Swal.fire({ icon: "error", title: "Error", text: "Something went wrong." });
-    }
-  };
+    };
 
-  if (!user) return <p className="text-center mt-10">Loading...</p>;
+    fetchUserProfile();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
       <NavBar />
-      <div className="max-w-lg mx-auto bg-white shadow-lg rounded-lg p-6 mt-10">
-        <h2 className="text-2xl font-bold text-center mb-4">User Profile</h2>
-        <div className="flex flex-col items-center">
-          <img src="https://as1.ftcdn.net/v2/jpg/05/16/27/58/1000_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg" alt="Profile" className="w-24 h-24 rounded-full shadow-lg mb-4" />
-          <p className="text-gray-700"><strong>Role:</strong> {user.role}</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-4 text-center">User Profile</h2>
 
-        {/* Profile Details */}
-        <div className="mt-6">
-          <label className="block text-gray-600 font-semibold">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={updatedUser.name}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            disabled={!editing}
-          />
-
-          <label className="block mt-4 text-gray-600 font-semibold">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={updatedUser.email}
-            onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded"
-            disabled={!editing}
-          />
-        </div>
-
-        {/* Buttons */}
-        <div className="mt-6 flex justify-between">
-          {editing ? (
-            <>
-              <button onClick={handleUpdate} className="bg-green-500 text-white px-4 py-2 rounded">Save</button>
-              <button onClick={() => setEditing(false)} className="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
-            </>
+          {loading ? (
+            <p className="text-center">Loading...</p>
+          ) : user ? (
+            <div>
+              <p><strong>Name:</strong> {user.name}</p>
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Role:</strong> {user.role}</p>
+              <p className="text-lg font-bold mt-4">
+                🏖️ <strong>Leave Balance:</strong> {user.leave_balance} days
+              </p>
+            </div>
           ) : (
-            <button onClick={() => setEditing(true)} className="bg-blue-500 text-white px-4 py-2 rounded w-full">
-              Edit Profile
-            </button>
+            <p className="text-center text-red-500">User not found.</p>
           )}
         </div>
       </div>

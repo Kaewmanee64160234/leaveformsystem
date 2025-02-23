@@ -5,10 +5,10 @@ const router = express.Router();
 
 // MySQL connection configuration
 const connection = mysql.createConnection({
-  host: "localhost",    // XAMPP MySQL server host
-  user: "root",         // default XAMPP username
-  password: "",         // default XAMPP password (usually empty)
-  database: "leaveapprovals"  // your database name
+  host: "localhost", // XAMPP MySQL server host
+  user: "root", // default XAMPP username
+  password: "", // default XAMPP password (usually empty)
+  database: "leaveapprovals", // your database name
 });
 
 connection.connect((err) => {
@@ -19,9 +19,15 @@ connection.connect((err) => {
   console.log("Connected to the MySQL database.");
 });
 
-// GET  endpoint
+// Calculate total leave days
+const calculateLeaveDays = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1; // Includes both days
+};
+
+// ✅ Get all leave requests with filters
 router.get("/", (req, res) => {
-  // Base query joining LeaveRequests with Users and LeaveTypes
   let query = `
     SELECT 
       lr.id, 
@@ -34,53 +40,49 @@ router.get("/", (req, res) => {
       lr.reason, 
       lr.status, 
       lr.created_at,
-      lr.manager_id
+      lr.manager_id,
+      u.leave_balance
     FROM LeaveRequests lr
     LEFT JOIN Users u ON lr.user_id = u.id
     LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
   `;
-  
-  // Build filtering conditions from query parameters
+
   const { status, leaveType, user_id, manager_id } = req.query;
   const conditions = [];
   const params = [];
-  
+
   if (status) {
     conditions.push("lr.status = ?");
     params.push(status);
   }
-  
+
   if (leaveType) {
     conditions.push("lt.type_name = ?");
     params.push(leaveType);
   }
-  
+
   if (user_id) {
     conditions.push("lr.user_id = ?");
     params.push(user_id);
   }
-  
+
   if (manager_id) {
     conditions.push("lr.manager_id = ?");
     params.push(manager_id);
   }
-  
-  // Append the WHERE clause if conditions exist
+
   if (conditions.length > 0) {
     query += " WHERE " + conditions.join(" AND ");
   }
-  
-  // Order by created_at descending
+
   query += " ORDER BY lr.created_at DESC";
-  
-  // Execute the query
+
   connection.query(query, params, (err, results) => {
     if (err) {
       console.error("Error fetching leave requests:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    
-    // Map each result to include leave type, start date, end date, reason, and status
+
     const filteredResults = results.map((r) => ({
       id: r.id,
       leaveType: r.type_name,
@@ -89,134 +91,16 @@ router.get("/", (req, res) => {
       reason: r.reason,
       status: r.status,
       user_name: r.user_name,
+      leave_balance: r.leave_balance,
+      user_id: r.user_id,
     }));
-    console.log("filteredResults", filteredResults);
-    
+console.log(filteredResults);
+
     res.json(filteredResults);
   });
 });
 
-
-
-// GET /:userId endpoint
-router.get('/:userId', (req, res) => {
-  const userId = req.params.userId;
-  connection.query("SELECT * FROM LeaveRequests WHERE user_id = ?", [userId], (err, results) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json(results);
-  });
-});
-
-// POST  endpoint
-router.post("/", (req, res) => {
-    console.log("req.body", req.body);
-    
-    const { user_id, manager_id, leave_type_id, startDate, endDate, reason, status } = req.body;
-    
-    // Check for required fields
-    if (!user_id || !manager_id || !leave_type_id || !startDate || !endDate || !reason) {
-      return res.status(400).json({ error: "Missing required fields." });
-    }
-    
-    // Default status to 'pending' if not provided
-    const requestStatus = status || "pending";
-    
-    // Insert the leave request including the manager_id
-    connection.query(
-      "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [user_id, manager_id, leave_type_id, startDate, endDate, reason, requestStatus],
-      (err, results) => {
-        //  log qiery error
-        console.log(
-            "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [user_id, manager_id, leave_type_id,startDate, endDate, reason, requestStatus]
-        );
-        
-        if (err) {
-            console.log("Error inserting leave request:", err);
-            
-          console.error("Error inserting leave request:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-        res.status(201).json({ message: "Leave request created", id: results.insertId });
-      }
-    );
-  });
-  
-
-// GET /:id endpoint
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  connection.query("SELECT * FROM LeaveRequests WHERE id = ?", [id], (err, results) => {
-    if (err) {
-      console.error("Error fetching leave request:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    if (results.length === 0) {
-      return res.status(404).json({ error: "Leave request not found" });
-    }
-    res.json(results[0]);
-  });
-});
-
-// PUT /:id endpoint
-router.put("/:id", (req, res) => {
-  const { id } = req.params;
-  console.log("req.body", req.body);
-  console.log("req.params", req.params);
-  
-  
-  // If the request body contains only the "status" property, update only the status.
-  if (Object.keys(req.body).length === 1 && req.body.status) {
-    connection.query(
-      "UPDATE LeaveRequests SET status = ? WHERE id = ?",
-      [req.body.status, id],
-      (err, results) => {
-        if (err) {
-          console.error("Error updating leave request status:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-        console.log("UPDATE LeaveRequests SET status = ? WHERE id = ?", [req.body.status, id]);
-        res.json({ message: "Leave request status updated" });
-      }
-    );
-  } else {
-    // Otherwise, update all fields (if needed)
-    const { user_id, leave_type_id, start_date, end_date, reason, status } = req.body;
-    connection.query(
-      "UPDATE LeaveRequests SET user_id = ?, leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE id = ?",
-      [user_id, leave_type_id, start_date, end_date, reason, status, id],
-      (err, results) => {
-        if (err) {
-          console.error("Error updating leave request:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
-        console.log(
-          "UPDATE LeaveRequests SET user_id = ?, leave_type_id = ?, start_date = ?, end_date = ?, reason = ?, status = ? WHERE id = ?",
-          [user_id, leave_type_id, start_date, end_date, reason, status, id]
-        );
-        res.json({ message: "Leave request updated" });
-      }
-    );
-  }
-});
-
-
-// DELETE /:id endpoint
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-  connection.query("DELETE FROM LeaveRequests WHERE id = ?", [id], (err, results) => {
-    if (err) {
-      console.error("Error deleting leave request:", err);
-      return res.status(500).json({ error: "Database error" });
-    }
-    res.json({ message: "Leave request deleted" });
-  });
-});
-
+// ✅ Get leave history for a specific user
 router.get("/user/:id", (req, res) => {
   const { id } = req.params;
   const query = `
@@ -228,7 +112,9 @@ router.get("/user/:id", (req, res) => {
       lr.reason, 
       lr.status,
       lr.manager_id,
-      u.name AS approved_by
+      u.name AS approved_by,
+      u.leave_balance,
+      u.id AS user_id
     FROM LeaveRequests lr
     LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
     LEFT JOIN Users u ON lr.manager_id = u.id
@@ -241,15 +127,116 @@ router.get("/user/:id", (req, res) => {
       console.error("Database error:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    console.log("results", results);
-    
+
     res.json(results);
   });
 });
 
+// ✅ Create a new leave request
+router.post("/", (req, res) => {
+  const {
+    user_id,
+    manager_id,
+    leave_type_id,
+    startDate,
+    endDate,
+    reason,
+    status,
+  } = req.body;
+
+  if (
+    !user_id ||
+    !manager_id ||
+    !leave_type_id ||
+    !startDate ||
+    !endDate ||
+    !reason
+  ) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  const totalDays = calculateLeaveDays(startDate, endDate);
+
+  // Check if the user has enough leave balance
+  connection.query(
+    "SELECT leave_balance FROM Users WHERE id = ?",
+    [user_id],
+    (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      const availableBalance = results[0].leave_balance;
+      if (availableBalance < totalDays) {
+        return res
+          .status(400)
+          .json({
+            error: `Insufficient leave balance. You have ${availableBalance} days left.`,
+          });
+      }
+
+      connection.query(
+        "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
+        [user_id, manager_id, leave_type_id, startDate, endDate, reason],
+        (err, results) => {
+          if (err) {
+            console.error("Error inserting leave request:", err);
+            return res.status(500).json({ error: "Database error" });
+          }
+
+          connection.query(
+            "UPDATE Users SET leave_balance = leave_balance - ? WHERE id = ?",
+            [totalDays, user_id],
+            (err) => {
+              if (err) {
+                console.error("Error updating leave balance:", err);
+                return res
+                  .status(500)
+                  .json({ error: "Database error updating leave balance" });
+              }
+
+              res
+                .status(201)
+                .json({
+                  message: "Leave request submitted",
+                  id: results.insertId,
+                });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+// ✅ Update leave request status
+router.put("/:id", (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: "Status is required" });
+  }
+
+  connection.query(
+    "UPDATE LeaveRequests SET status = ? WHERE id = ?",
+    [status, id],
+    (err, results) => {
+      if (err) {
+        console.error("Error updating leave request:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      res.json({ message: `Leave request ${status}` });
+    }
+  );
+});
+
+// ✅ Get leave history for a manager (last 24 hours)
 router.get("/history/:manager_id", (req, res) => {
   const { manager_id } = req.params;
-  
+
   const query = `
     SELECT 
       lr.id, 
@@ -257,12 +244,11 @@ router.get("/history/:manager_id", (req, res) => {
       u.name AS user_name, 
       lr.leave_type_id, 
       lt.type_name AS leaveType, 
-      lr.start_date as startDate, 
-      lr.end_date as endDate, 
+      lr.start_date, 
+      lr.end_date, 
       lr.reason, 
       lr.status, 
-      lr.created_at,
-      lr.manager_id
+      lr.created_at
     FROM LeaveRequests lr
     LEFT JOIN Users u ON lr.user_id = u.id
     LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
@@ -281,6 +267,20 @@ router.get("/history/:manager_id", (req, res) => {
   });
 });
 
-
+// ✅ Delete a leave request
+router.delete("/:id", (req, res) => {
+  const { id } = req.params;
+  connection.query(
+    "DELETE FROM LeaveRequests WHERE id = ?",
+    [id],
+    (err, results) => {
+      if (err) {
+        console.error("Error deleting leave request:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+      res.json({ message: "Leave request deleted" });
+    }
+  );
+});
 
 module.exports = router;

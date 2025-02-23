@@ -120,5 +120,56 @@ router.get("/user/:name", (req, res) => {
     res.json(results[0]);
   });
 });
+router.get("/profile/:userId", (req, res) => {
+  const { userId } = req.params;
 
+  const query = `
+    SELECT id, name, email, role, leave_balance 
+    FROM Users 
+    WHERE id = ?
+  `;
+
+  connection.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error("Error fetching user profile:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(results[0]);
+  });
+});
+router.put("/update-balance/:userId", (req, res) => {
+  const { userId } = req.params;
+  const { daysUsed } = req.body;
+
+  console.log("Updating leave balance for user", userId, "with", daysUsed, "days used.");
+  
+
+  if (!daysUsed || daysUsed <= 0) {
+    return res.status(400).json({ error: "Invalid leave days." });
+  }
+
+  const query = `
+    UPDATE Users 
+    SET leave_balance = leave_balance - ? 
+    WHERE id = ? AND leave_balance >= ?;
+  `;
+
+  connection.query(query, [daysUsed, userId, daysUsed], (err, results) => {
+    if (err) {
+      console.error("Error updating leave balance:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(400).json({ error: "Insufficient leave balance." });
+    }
+
+
+    res.json({ message: "Leave balance updated successfully." });
+  });
+});
 module.exports = router;
