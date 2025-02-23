@@ -127,6 +127,7 @@ const HistoryConfirm = () => {
                   <th className="px-4 py-2 text-left">Leave Type</th>
                   <th className="px-4 py-2 text-left">Start Date</th>
                   <th className="px-4 py-2 text-left">End Date</th>
+                  <th className="px-4 py-2 text-left">Total Days</th>
                   <th className="px-4 py-2 text-left">Reason</th>
                   <th className="px-4 py-2 text-left">Status</th>
                   <th className="px-4 py-2 text-left">Actions</th>
@@ -142,6 +143,9 @@ const HistoryConfirm = () => {
                     </td>
                     <td className="px-4 py-2">
                       {new Date(request.endDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      {calculateTotalDays(request.startDate, request.endDate)} days
                     </td>
                     <td className="px-4 py-2">{request.reason}</td>
                     <td className="px-4 py-2">{request.status}</td>
