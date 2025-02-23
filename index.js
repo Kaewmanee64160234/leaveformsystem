@@ -39,13 +39,13 @@ app.post("/register", (req, res) => {
   }
 
   // Check if the user already exists
-  connection.query("SELECT * FROM Users WHERE email = ?", [email], async (err, results) => {
+  connection.query("SELECT * FROM Users WHERE email = ? OR name = ?", [email, name], async (err, results) => {
     if (err) {
       console.error("Database error:", err);
       return res.status(500).json({ error: "Database error" });
     }
     if (results.length > 0) {
-      return res.status(400).json({ error: "User already exists." });
+      return res.status(400).json({ error: "User with this email or name already exists." });
     }
 
     // Hash the password
@@ -96,6 +96,21 @@ app.post("/login", (req, res) => {
     );
     
     res.json({ token, user });
+  });
+});
+
+// find user by name
+app.get("/user/:name", (req, res) => {
+  const name = req.params.name;
+  connection.query("SELECT * FROM Users WHERE name = ?", [name], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json(results[0]);
   });
 });
 

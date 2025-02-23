@@ -1,16 +1,37 @@
 // src/components/Register.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AlertBix from "../components/AlertBox"; // Import the AlertBix component
 
 const Register = () => {
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole]         = useState("employee"); // default role
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate              = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Clear previous messages
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    // Validate username length
+    if (name.trim().length < 3) {
+      setErrorMessage("Username must be at least 3 characters long.");
+      return;
+    }
+
+    // Validate password security
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setErrorMessage("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:5000/register", {
          method: "POST",
@@ -19,14 +40,17 @@ const Register = () => {
       });
       const data = await response.json();
       if (response.ok) {
-         alert("Registration successful! Please log in.");
-         navigate("/login");
+         setSuccessMessage("Registration successful! Please log in.");
+         // Redirect after a short delay to let the user read the message.
+         setTimeout(() => {
+           navigate("/login");
+         }, 2000);
       } else {
-         alert(data.error || "Registration failed");
+         setErrorMessage(data.error || "Registration failed");
       }
     } catch (err) {
       console.error(err);
-      alert("An error occurred");
+      setErrorMessage("An error occurred");
     }
   };
 
@@ -39,6 +63,8 @@ const Register = () => {
         <h2 className="text-2xl font-bold mb-4 text-center text-light">
           Register
         </h2>
+        <AlertBix message={errorMessage} type="error" />
+        <AlertBix message={successMessage} type="success" />
         <div className="mb-4">
           <label className="block text-light">Name</label>
           <input
