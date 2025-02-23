@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import NavBar from "../../components/NavBar";
 
 const LeaveHistory = () => {
@@ -7,7 +7,9 @@ const LeaveHistory = () => {
   useEffect(() => {
     const fetchLeaveHistory = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/leave-requests");
+        const response = await fetch(
+          "http://localhost:5000/api/leave-requests"
+        );
         const data = await response.json();
         if (response.ok) {
           setLeaveRequests(data);
@@ -22,6 +24,18 @@ const LeaveHistory = () => {
 
     fetchLeaveHistory();
   }, []);
+  const calculateTotalDays = (start, end) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end dates
+    return diffDays;
+  };
+  
+  // format date
+  const formatDate = (dateStr) => {
+    return dateStr ? new Date(dateStr).toLocaleDateString() : "-";
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -39,6 +53,7 @@ const LeaveHistory = () => {
                   <th className="px-4 py-2 text-left">Leave Type</th>
                   <th className="px-4 py-2 text-left">Start Date</th>
                   <th className="px-4 py-2 text-left">End Date</th>
+                  <th className="px-4 py-2 text-left">Total Days</th> {/* ✅ NEW COLUMN */}
                   <th className="px-4 py-2 text-left">Reason</th>
                   <th className="px-4 py-2 text-left">Status</th>
                 </tr>
@@ -48,8 +63,13 @@ const LeaveHistory = () => {
                   <tr key={request.id}>
                     <td className="px-4 py-2">{request.id}</td>
                     <td className="px-4 py-2">{request.leaveType}</td>
-                    <td className="px-4 py-2">{request.startDate}</td>
-                    <td className="px-4 py-2">{request.endDate}</td>
+                    <td className="px-4 py-2">
+                      {formatDate(request.startDate)}
+                    </td>
+                    <td className="px-4 py-2">{formatDate(request.endDate)}</td>
+                    <td className="px-4 py-2">
+                      {calculateTotalDays(request.startDate, request.endDate)} days
+                    </td>
                     <td className="px-4 py-2">{request.reason}</td>
                     <td className="px-4 py-2">{request.status}</td>
                   </tr>

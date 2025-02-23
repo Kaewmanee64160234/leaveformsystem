@@ -14,9 +14,7 @@ const HistoryConfirm = () => {
   };
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [newStatus, setNewStatus] = useState(""); // ✅ Ensure this is defined
-
+  const [setNewStatus] = useState(""); // Correctly define setNewStatus
 
   // Get logged-in user ID from localStorage
   const user = localStorage.getItem("user")
@@ -65,9 +63,8 @@ const HistoryConfirm = () => {
   // Open modal
   const handleEditClick = (request) => {
     setSelectedRequest(request);
-    setNewStatus(request.status); // ✅ Fix: Ensure newStatus gets updated correctly
+    setNewStatus(request.status);
   };
-  
 
   // Update leave request status
   const updateLeaveStatus = async (status) => {
@@ -152,8 +149,7 @@ const HistoryConfirm = () => {
                       <button
                         className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
                         onClick={() => handleEditClick(request)}
->
-                      
+                      >
                         Edit
                       </button>
                     </td>
