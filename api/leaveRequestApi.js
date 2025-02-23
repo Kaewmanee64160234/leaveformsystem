@@ -8,7 +8,7 @@ const connection = mysql.createConnection({
   host: "localhost",    // XAMPP MySQL server host
   user: "root",         // default XAMPP username
   password: "",         // default XAMPP password (usually empty)
-  database: "formleav"  // your database name
+  database: "leaveapprovals"  // your database name
 });
 
 connection.connect((err) => {
@@ -20,8 +20,8 @@ connection.connect((err) => {
 });
 
 // GET  endpoint
-router.get('/', (req, res) => {
-  // Base query to join LeaveRequests with Users and LeaveTypes
+router.get("/", (req, res) => {
+  // Base query joining LeaveRequests with Users and LeaveTypes
   let query = `
     SELECT 
       lr.id, 
@@ -33,14 +33,15 @@ router.get('/', (req, res) => {
       lr.end_date, 
       lr.reason, 
       lr.status, 
-      lr.created_at
+      lr.created_at,
+      lr.manager_id
     FROM LeaveRequests lr
     LEFT JOIN Users u ON lr.user_id = u.id
     LEFT JOIN LeaveTypes lt ON lr.leave_type_id = lt.id
   `;
   
-  // Collect filter conditions and parameters
-  const { status, leaveType } = req.query;
+  // Build filtering conditions from query parameters
+  const { status, leaveType, user_id, manager_id } = req.query;
   const conditions = [];
   const params = [];
   
@@ -50,17 +51,26 @@ router.get('/', (req, res) => {
   }
   
   if (leaveType) {
-    // Filter by leave type name. If you prefer filtering by leave_type_id, adjust accordingly.
     conditions.push("lt.type_name = ?");
     params.push(leaveType);
   }
   
-  // Add WHERE clause if any conditions exist
+  if (user_id) {
+    conditions.push("lr.user_id = ?");
+    params.push(user_id);
+  }
+  
+  if (manager_id) {
+    conditions.push("lr.manager_id = ?");
+    params.push(manager_id);
+  }
+  
+  // Append the WHERE clause if conditions exist
   if (conditions.length > 0) {
     query += " WHERE " + conditions.join(" AND ");
   }
   
-  // Order results by creation date descending
+  // Order by created_at descending
   query += " ORDER BY lr.created_at DESC";
   
   // Execute the query
@@ -69,9 +79,21 @@ router.get('/', (req, res) => {
       console.error("Error fetching leave requests:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    res.json(results);
+    
+    // Map each result to include leave type, start date, end date, reason, and status
+    const filteredResults = results.map((r) => ({
+      leaveType: r.type_name,
+      startDate: r.start_date,
+      endDate: r.end_date,
+      reason: r.reason,
+      status: r.status
+    }));
+    
+    res.json(filteredResults);
   });
 });
+
+
 
 // GET /:userId endpoint
 router.get('/:userId', (req, res) => {
@@ -87,24 +109,40 @@ router.get('/:userId', (req, res) => {
 
 // POST  endpoint
 router.post("/", (req, res) => {
-  const { user_id, leave_type_id, start_date, end_date, reason, status } = req.body;
-  if (!user_id || !leave_type_id || !start_date || !end_date || !reason) {
-    return res.status(400).json({ error: "Missing required fields." });
-  }
-  // Default status to 'pending' if not provided.
-  const requestStatus = status || "pending";
-  connection.query(
-    "INSERT INTO LeaveRequests (user_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?)",
-    [user_id, leave_type_id, start_date, end_date, reason, requestStatus],
-    (err, results) => {
-      if (err) {
-        console.error("Error inserting leave request:", err);
-        return res.status(500).json({ error: "Database error" });
-      }
-      res.status(201).json({ message: "Leave request created", id: results.insertId });
+    console.log("req.body", req.body);
+    
+    const { user_id, manager_id, leave_type_id, startDate, endDate, reason, status } = req.body;
+    
+    // Check for required fields
+    if (!user_id || !manager_id || !leave_type_id || !startDate || !endDate || !reason) {
+      return res.status(400).json({ error: "Missing required fields." });
     }
-  );
-});
+    
+    // Default status to 'pending' if not provided
+    const requestStatus = status || "pending";
+    
+    // Insert the leave request including the manager_id
+    connection.query(
+      "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [user_id, manager_id, leave_type_id, startDate, endDate, reason, requestStatus],
+      (err, results) => {
+        //  log qiery error
+        console.log(
+            "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [user_id, manager_id, leave_type_id,startDate, endDate, reason, requestStatus]
+        );
+        
+        if (err) {
+            console.log("Error inserting leave request:", err);
+            
+          console.error("Error inserting leave request:", err);
+          return res.status(500).json({ error: "Database error" });
+        }
+        res.status(201).json({ message: "Leave request created", id: results.insertId });
+      }
+    );
+  });
+  
 
 // GET /:id endpoint
 router.get("/:id", (req, res) => {

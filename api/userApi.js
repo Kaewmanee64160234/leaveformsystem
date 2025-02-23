@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
   host: "localhost",    // XAMPP MySQL server host
   user: "root",         // default XAMPP username
   password: "",         // default XAMPP password (usually empty)
-  database: "formleav"  // your database name
+  database: "leaveapprovals"  // your database name
 });
 
 connection.connect((err) => {
@@ -19,6 +19,20 @@ connection.connect((err) => {
     return;
   }
   console.log("Connected to the MySQL database.");
+});
+
+// Get list of managers from Users table (role = 'manager')
+router.get("/managers", (req, res) => {
+  const query = "SELECT id, name FROM Users WHERE role = ?";
+  connection.query(query,['manager'], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    console.log("Managers:", results);
+    
+    res.json(results);
+  });
 });
 
 // POST /register endpoint

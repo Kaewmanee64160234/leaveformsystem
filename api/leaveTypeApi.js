@@ -8,7 +8,7 @@ const connection = mysql.createConnection({
   host: "localhost",    // XAMPP MySQL server host
   user: "root",         // default XAMPP username
   password: "",         // default XAMPP password (usually empty)
-  database: "formleav"  // your database name
+  database: "leaveapprovals"  // your database name
 });
 
 connection.connect((err) => {
@@ -38,7 +38,7 @@ router.post("/", (req, res) => {
   );
 });
 
-// GET  endpoint
+// GET /leave-types endpoint
 router.get("/", (req, res) => {
   connection.query("SELECT * FROM LeaveTypes", (err, results) => {
     if (err) {

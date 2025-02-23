@@ -21,11 +21,9 @@ const Login = () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         // Redirect based on the user role
-        if (data.user.role === "manager") {
-          navigate("/leader-home");
-        } else {
-          navigate("/employee-home");
-        }
+ 
+          navigate("/");
+        
       } else {
         alert(data.error || "Login failed");
       }
