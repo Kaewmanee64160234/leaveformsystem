@@ -1,12 +1,12 @@
 // src/App.jsx
 import 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './components/Login';
-import Register from './components/Register';
-import EmployeeHome from './components/EmployeeHome';
-import LeaderHome from './components/LeaderHome';
-import LeaveForm from './components/LeaveForm';
-import LeaveHistory from './components/LeaveHistory';
+import Login from './views/Login';
+import Register from './views/Register';
+import EmployeeHome from './views/EmployeeHome';
+import LeaderHome from './views/LeaderHome';
+import LeaveForm from './views/LeaveForm';
+import LeaveHistory from './views/LeaveHistory';
 
 function App() {
   return (
