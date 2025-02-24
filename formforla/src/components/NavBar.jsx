@@ -1,37 +1,52 @@
-// src/components/NavBar.jsx
-import "react";
+import  { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Box,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  // Get logged in user and role (default to "employee" if none)
+  // Get logged-in user (default to "employee" role)
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : { role: "employee" };
 
-  // Helper function to determine active link styling
-  const linkClass = (path) =>
-    pathname === path ? "text-yellow-300 font-bold" : "text-white hover:text-gray-200";
-
-  // Define base menu items (accessible by everyone)
+  // Menu items for all users
   const baseMenu = [
     { path: "/", label: "Home" },
     { path: "/create-leave-request", label: "ใบขอการลา" },
     { path: "/history-leave", label: "ประวัติการลา" },
-    { path: "/user-profile", label: "ข้อมูลส่วนตัว" }
+    { path: "/user-profile", label: "ข้อมูลส่วนตัว" },
   ];
 
-  // Define additional items for Leaders/Managers
+  // Additional menu items for Leaders/Managers
   const leaderMenu = [
     { path: "/leave-history", label: "คำร้องการลา" },
     { path: "/history-confirm", label: "ประวัติยืนยันการลา" },
     { path: "/type-leave", label: "ประเภทการลา" },
     { path: "/static-board-leave", label: "สถิติการลา" },
-    // user management
-    {path: "/user-management", label: "จัดการผู้ใช้งาน"}
+    { path: "/user-management", label: "จัดการผู้ใช้งาน" },
   ];
 
+  // Logout handler
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -39,39 +54,82 @@ const NavBar = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-blue-500 to-blue-700 shadow-lg">
-      <div className="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-white text-3xl font-bold mb-2 md:mb-0">
-          Leave Management
-        </h1>
-        <nav>
-          <ul className="flex space-x-4">
+    <>
+      {/* Top AppBar */}
+      <AppBar position="sticky" sx={{ background: "linear-gradient(to right, #1976d2, #1e88e5)" }}>
+        <Toolbar>
+          {/* Mobile Menu Button */}
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={() => setMenuOpen(true)}
+            sx={{ mr: 2, display: { xs: "block", md: "none" } }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          {/* Title */}
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Leave Management
+          </Typography>
+
+          {/* Desktop Navigation */}
+          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
             {baseMenu.map((item) => (
-              <li key={item.path}>
-                <Link to={item.path} className={linkClass(item.path)}>
-                  {item.label}
-                </Link>
-              </li>
+              <Button key={item.path} component={Link} to={item.path} color="inherit">
+                {item.label}
+              </Button>
             ))}
-            {/* Conditionally render leader-only menu items */}
             {(user.role === "leader" || user.role === "manager") &&
               leaderMenu.map((item) => (
-                <li key={item.path}>
-                  <Link to={item.path} className={linkClass(item.path)}>
-                    {item.label}
-                  </Link>
-                </li>
+                <Button key={item.path} component={Link} to={item.path} color="inherit">
+                  {item.label}
+                </Button>
               ))}
-          </ul>
-        </nav>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded mt-2 md:mt-0"
-        >
-          Logout
-        </button>
-      </div>
-    </header>
+          </Box>
+
+          {/* User Menu */}
+          <IconButton color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <AccountCircleIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+          >
+            <MenuItem onClick={() => navigate("/user-profile")}>Profile</MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+              Logout
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+      </AppBar>
+
+      {/* Sidebar Drawer (Mobile Navigation) */}
+      <Drawer anchor="left" open={menuOpen} onClose={() => setMenuOpen(false)}>
+        <Box sx={{ width: 250 }}>
+          <List>
+            {baseMenu.map((item) => (
+              <ListItem button key={item.path} onClick={() => navigate(item.path)}>
+                <ListItemText primary={item.label} />
+              </ListItem>
+            ))}
+            {(user.role === "leader" || user.role === "manager") && (
+              <>
+                <Divider />
+                {leaderMenu.map((item) => (
+                  <ListItem button key={item.path} onClick={() => navigate(item.path)}>
+                    <ListItemText primary={item.label} />
+                  </ListItem>
+                ))}
+              </>
+            )}
+          </List>
+        </Box>
+      </Drawer>
+    </>
   );
 };
 

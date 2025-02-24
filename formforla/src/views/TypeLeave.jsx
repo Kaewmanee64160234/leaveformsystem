@@ -1,7 +1,23 @@
-// src/components/CreateLeaveType.jsx
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import NavBar from "../components/NavBar";
+import {
+  Container,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  CircularProgress,
+} from "@mui/material";
 
 const CreateLeaveType = () => {
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -10,7 +26,7 @@ const CreateLeaveType = () => {
   const [typeName, setTypeName] = useState("");
   const [description, setDescription] = useState("");
 
-  // Fetch list of leave types
+  // Fetch leave types
   const fetchLeaveTypes = async () => {
     try {
       const response = await fetch("http://localhost:5000/api/leave-types");
@@ -67,11 +83,9 @@ const CreateLeaveType = () => {
           timer: 2000,
           showConfirmButton: false,
         });
-        // Clear fields and close modal
         setTypeName("");
         setDescription("");
         setModalOpen(false);
-        // Refresh the list
         fetchLeaveTypes();
       } else {
         Swal.fire({
@@ -91,99 +105,87 @@ const CreateLeaveType = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <Container maxWidth="md" sx={{ mt: 4 }}>
       <NavBar />
-      <div className="container mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-6">Manage Leave Types</h2>
-        
-        {/* Button to open the modal */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Add Leave Type
-          </button>
-        </div>
+      <h2 style={{ textAlign: "center", marginBottom: "20px", fontSize: "24px", fontWeight: "bold" }}>
+        Manage Leave Types
+      </h2>
 
-        {/* List of leave types */}
-        {loading ? (
-          <p className="text-center">Loading...</p>
-        ) : leaveTypes.length === 0 ? (
-          <p className="text-center">No leave types found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow rounded">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="py-2 px-4 border-b">ID</th>
-                  <th className="py-2 px-4 border-b">Leave Type Name</th>
-                  <th className="py-2 px-4 border-b">Description</th>
-                  <th className="py-2 px-4 border-b">Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaveTypes.map((lt) => (
-                  <tr key={lt.id} className="text-center hover:bg-gray-100">
-                    <td className="py-2 px-4 border-b">{lt.id}</td>
-                    <td className="py-2 px-4 border-b">{lt.type_name}</td>
-                    <td className="py-2 px-4 border-b">{lt.description}</td>
-                    <td className="py-2 px-4 border-b">
-                      {lt.created_at && lt.created_at.slice(0, 10)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Button to open modal */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
+          + Add Leave Type
+        </Button>
       </div>
 
-      {/* Modal for creating a new leave type */}
-      {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <h3 className="text-xl font-bold mb-4">Add New Leave Type</h3>
-            <form onSubmit={handleModalSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700">Leave Type Name</label>
-                <input
-                  type="text"
-                  value={typeName}
-                  onChange={(e) => setTypeName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700">Description</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="3"
-                ></textarea>
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </div>
+      {/* Leave Type Table */}
+      {loading ? (
+        <div style={{ textAlign: "center", marginTop: "20px" }}>
+          <CircularProgress />
         </div>
+      ) : leaveTypes.length === 0 ? (
+        <p style={{ textAlign: "center", color: "#777" }}>No leave types found.</p>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Leave Type Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Created At</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {leaveTypes.map((lt) => (
+                <TableRow key={lt.id} hover>
+                  <TableCell>{lt.id}</TableCell>
+                  <TableCell>{lt.type_name}</TableCell>
+                  <TableCell>{lt.description}</TableCell>
+                  <TableCell>{lt.created_at && lt.created_at.slice(0, 10)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
-    </div>
+
+      {/* Modal for creating a new leave type */}
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
+        <DialogTitle>Add New Leave Type</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleModalSubmit}>
+            <TextField
+              fullWidth
+              label="Leave Type Name"
+              variant="outlined"
+              margin="dense"
+              value={typeName}
+              onChange={(e) => setTypeName(e.target.value)}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              variant="outlined"
+              margin="dense"
+              multiline
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setModalOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button type="submit" onClick={handleModalSubmit} color="primary" variant="contained">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 
