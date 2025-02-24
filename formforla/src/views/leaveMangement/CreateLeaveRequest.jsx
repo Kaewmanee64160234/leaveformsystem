@@ -34,7 +34,7 @@ const CreateLeaveRequest = () => {
         const managerResponse = await fetch("http://localhost:5000/api/users/managers");
 
         if (!leaveResponse.ok || !managerResponse.ok) {
-          throw new Error("Failed to fetch data");
+          throw new Error("ไม่สามารถดึงข้อมูลได้");
         }
 
         const leaveData = await leaveResponse.json();
@@ -45,8 +45,8 @@ const CreateLeaveRequest = () => {
       } catch  {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "An error occurred while fetching data.",
+          title: "ข้อผิดพลาด",
+          text: "เกิดข้อผิดพลาดขณะดึงข้อมูล",
         });
       } finally {
         setLoading(false);
@@ -62,8 +62,8 @@ const CreateLeaveRequest = () => {
     if (new Date(startDate) > new Date(endDate)) {
       Swal.fire({
         icon: "error",
-        title: "Validation Error",
-        text: "Start date must be before or equal to the end date.",
+        title: "ข้อผิดพลาดในการตรวจสอบ",
+        text: "วันที่เริ่มต้องมาก่อนหรือเท่ากับวันที่สิ้นสุด",
       });
       return;
     }
@@ -73,8 +73,8 @@ const CreateLeaveRequest = () => {
     if (!user) {
       Swal.fire({
         icon: "error",
-        title: "Not Authenticated",
-        text: "Please log in first.",
+        title: "ไม่ได้รับการยืนยันตัวตน",
+        text: "กรุณาเข้าสู่ระบบก่อน",
       });
       navigate("/login");
       return;
@@ -83,8 +83,8 @@ const CreateLeaveRequest = () => {
     if (!managerId) {
       Swal.fire({
         icon: "error",
-        title: "Validation Error",
-        text: "Please select a manager.",
+        title: "ข้อผิดพลาดในการตรวจสอบ",
+        text: "กรุณาเลือกผู้จัดการ",
       });
       return;
     }
@@ -96,8 +96,8 @@ const CreateLeaveRequest = () => {
       if (checkResponse.ok && latestRequest && latestRequest.status === "pending") {
         Swal.fire({
           icon: "warning",
-          title: "Pending Request Exists",
-          text: "You already have a pending leave request. Please wait for approval before submitting a new one.",
+          title: "มีคำขอที่รอดำเนินการอยู่",
+          text: "คุณมีคำขอลาที่รอดำเนินการอยู่แล้ว กรุณารอการอนุมัติก่อนที่จะส่งคำขอใหม่",
         });
         return;
       }
@@ -121,8 +121,8 @@ const CreateLeaveRequest = () => {
       if (response.ok) {
         Swal.fire({
           icon: "success",
-          title: "Submitted",
-          text: "Leave request submitted successfully!",
+          title: "ส่งคำขอแล้ว",
+          text: "คำขอลาถูกส่งเรียบร้อยแล้ว!",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -136,15 +136,15 @@ const CreateLeaveRequest = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Submission Failed",
-          text: data.error || "Unable to submit leave request.",
+          title: "การส่งคำขอล้มเหลว",
+          text: data.error || "ไม่สามารถส่งคำขอลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred. Please try again later.",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้งในภายหลัง",
       });
     }
   };
@@ -154,7 +154,7 @@ const CreateLeaveRequest = () => {
       <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
           <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
-            Apply for Leave
+            ขอการลา
           </Typography>
 
           {loading ? (
@@ -164,9 +164,9 @@ const CreateLeaveRequest = () => {
           ) : (
             <form onSubmit={handleSubmit}>
               <FormControl fullWidth margin="normal">
-                <InputLabel>Leave Type</InputLabel>
+                <InputLabel>ประเภทการลา</InputLabel>
                 <Select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} required>
-                  <MenuItem value="">Select a leave type</MenuItem>
+                  <MenuItem value="">เลือกประเภทการลา</MenuItem>
                   {leaveTypes.map((type) => (
                     <MenuItem key={type.id} value={type.id}>
                       {type.type_name}
@@ -176,9 +176,9 @@ const CreateLeaveRequest = () => {
               </FormControl>
 
               <FormControl fullWidth margin="normal">
-                <InputLabel>Manager</InputLabel>
+                <InputLabel>ผู้จัดการ</InputLabel>
                 <Select value={managerId} onChange={(e) => setManagerId(e.target.value)} required>
-                  <MenuItem value="">Select a manager</MenuItem>
+                  <MenuItem value="">เลือกผู้จัดการ</MenuItem>
                   {managers.map((manager) => (
                     <MenuItem key={manager.id} value={manager.id}>
                       {manager.name}
@@ -189,7 +189,7 @@ const CreateLeaveRequest = () => {
 
               <TextField
                 fullWidth
-                label="Start Date"
+                label="วันที่เริ่ม"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -200,7 +200,7 @@ const CreateLeaveRequest = () => {
 
               <TextField
                 fullWidth
-                label="End Date"
+                label="วันที่สิ้นสุด"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -211,7 +211,7 @@ const CreateLeaveRequest = () => {
 
               <TextField
                 fullWidth
-                label="Reason"
+                label="เหตุผล"
                 multiline
                 rows={3}
                 value={reason}
@@ -227,7 +227,7 @@ const CreateLeaveRequest = () => {
                 fullWidth
                 sx={{ mt: 2, py: 1 }}
               >
-                Submit Leave Request
+                ส่งคำขอลา
               </Button>
             </form>
           )}

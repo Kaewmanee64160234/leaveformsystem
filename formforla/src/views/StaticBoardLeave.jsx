@@ -50,7 +50,7 @@ const StaticBoardLeave = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
      <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
-        Leave Statistics Board
+        สถิติการลางาน
       </Typography>
 
       {loading ? (
@@ -66,22 +66,22 @@ const StaticBoardLeave = () => {
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                   <People sx={{ fontSize: 40, color: "#50B498" }} />
                   <Typography variant="h6" fontWeight="bold">
-                    Employees with Most Leave Balance
+                    พนักงานที่มีวันลามากที่สุด
                   </Typography>
                 </Box>
                 <TableContainer component={Paper}>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#e8f5e9" }}>
-                        <TableCell>Name</TableCell>
-                        <TableCell align="right">Leave Days</TableCell>
+                        <TableCell>ชื่อ</TableCell>
+                        <TableCell align="right">จำนวนวันลา</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {mostLeaveBalance.map((emp, index) => (
                         <TableRow key={index}>
                           <TableCell>{emp.name}</TableCell>
-                          <TableCell align="right">{emp.leave_balance} days</TableCell>
+                          <TableCell align="right">{emp.leave_balance} วัน</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -98,22 +98,22 @@ const StaticBoardLeave = () => {
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                   <TrendingDown sx={{ fontSize: 40, color: "#ff9800" }} />
                   <Typography variant="h6" fontWeight="bold">
-                    Employees with Least Leave Balance
+                    พนักงานที่มีวันลาน้อยที่สุด
                   </Typography>
                 </Box>
                 <TableContainer component={Paper}>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#fff3e0" }}>
-                        <TableCell>Name</TableCell>
-                        <TableCell align="right">Leave Days</TableCell>
+                        <TableCell>ชื่อ</TableCell>
+                        <TableCell align="right">จำนวนวันลา</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {leastLeaveBalance.map((emp, index) => (
                         <TableRow key={index}>
                           <TableCell>{emp.name}</TableCell>
-                          <TableCell align="right">{emp.leave_balance} days</TableCell>
+                          <TableCell align="right">{emp.leave_balance} วัน</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -130,22 +130,22 @@ const StaticBoardLeave = () => {
                 <Box display="flex" alignItems="center" gap={2} mb={2}>
                   <TrendingUp sx={{ fontSize: 40, color: "#1976d2" }} />
                   <Typography variant="h6" fontWeight="bold">
-                    Most Used Leave Type
+                    ประเภทการลาที่ใช้มากที่สุด
                   </Typography>
                 </Box>
                 <TableContainer component={Paper}>
                   <Table>
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#e3f2fd" }}>
-                        <TableCell>Type</TableCell>
-                        <TableCell align="right">Times Used</TableCell>
+                        <TableCell>ประเภท</TableCell>
+                        <TableCell align="right">จำนวนครั้งที่ใช้</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {mostUsedLeaveType.map((type, index) => (
                         <TableRow key={index}>
                           <TableCell>{type.type_name}</TableCell>
-                          <TableCell align="right">{type.count} times</TableCell>
+                          <TableCell align="right">{type.count} ครั้ง</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

@@ -42,15 +42,15 @@ const CreateLeaveType = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to fetch leave types.",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถดึงข้อมูลประเภทการลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while fetching leave types.",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะดึงข้อมูลประเภทการลา",
       });
     } finally {
       setLoading(false);
@@ -88,8 +88,8 @@ const CreateLeaveType = () => {
       if (response.ok) {
         Swal.fire({
           icon: "success",
-          title: editingId ? "Updated" : "Created",
-          text: `Leave type ${editingId ? "updated" : "created"} successfully.`,
+          title: editingId ? "อัปเดตแล้ว" : "สร้างแล้ว",
+          text: `ประเภทการลา${editingId ? "อัปเดต" : "สร้าง"}เรียบร้อยแล้ว`,
           timer: 2000,
           showConfirmButton: false,
         });
@@ -102,16 +102,16 @@ const CreateLeaveType = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to process request.",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถดำเนินการได้",
         });
       }
     } catch (err) {
       console.error(err);
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while processing the request.",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะดำเนินการ",
       });
     }
   };
@@ -127,13 +127,13 @@ const CreateLeaveType = () => {
   // Handle Delete
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to undo this!",
+      title: "คุณแน่ใจหรือไม่?",
+      text: "คุณจะไม่สามารถย้อนกลับได้!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#50B498",
-      confirmButtonText: "Yes, delete it!",
+      confirmButtonText: "ใช่, ลบเลย!",
     });
 
     if (result.isConfirmed) {
@@ -145,8 +145,8 @@ const CreateLeaveType = () => {
         if (response.ok) {
           Swal.fire({
             icon: "success",
-            title: "Deleted!",
-            text: "Leave type has been deleted.",
+            title: "ลบแล้ว!",
+            text: "ประเภทการลาถูกลบเรียบร้อยแล้ว",
             timer: 2000,
             showConfirmButton: false,
           });
@@ -155,15 +155,15 @@ const CreateLeaveType = () => {
         } else {
           Swal.fire({
             icon: "error",
-            title: "Error",
-            text: "Failed to delete leave type.",
+            title: "ข้อผิดพลาด",
+            text: "ไม่สามารถลบประเภทการลาได้",
           });
         }
       } catch {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "An error occurred while deleting leave type.",
+          title: "ข้อผิดพลาด",
+          text: "เกิดข้อผิดพลาดขณะลบประเภทการลา",
         });
       }
     }
@@ -172,7 +172,7 @@ const CreateLeaveType = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
-        Manage Leave Types
+        จัดการประเภทการลา
       </Typography>
 
       {/* Button to open modal */}
@@ -187,7 +187,7 @@ const CreateLeaveType = () => {
             setModalOpen(true);
           }}
         >
-          + Add Leave Type
+          + เพิ่มประเภทการลา
         </Button>
       </Box>
 
@@ -198,7 +198,7 @@ const CreateLeaveType = () => {
         </Box>
       ) : leaveTypes.length === 0 ? (
         <Typography textAlign="center" color="gray">
-          No leave types found.
+          ไม่พบประเภทการลา
         </Typography>
       ) : (
         <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
@@ -206,9 +206,9 @@ const CreateLeaveType = () => {
             <TableHead>
               <TableRow sx={{ backgroundColor: "#50B498" }}>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type Name</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Description</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>ชื่อประเภทการลา</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>คำอธิบาย</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>การกระทำ</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -235,24 +235,24 @@ const CreateLeaveType = () => {
       {/* Modal for creating/editing a leave type */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
         <DialogTitle textAlign="center" sx={{ fontWeight: "bold", backgroundColor: "#50B498", color: "white" }}>
-          {editingId ? "Edit Leave Type" : "Add New Leave Type"}
+          {editingId ? "แก้ไขประเภทการลา" : "เพิ่มประเภทการลาใหม่"}
         </DialogTitle>
         <form onSubmit={handleModalSubmit}>
           <DialogContent>
             <TextField
               fullWidth
-              label="Leave Type Name"
+              label="ชื่อประเภทการลา"
               variant="outlined"
               margin="dense"
               value={typeName}
               onChange={(e) => setTypeName(e.target.value)}
               error={typeNameError}
-              helperText={typeNameError ? "Leave type name is required." : ""}
+              helperText={typeNameError ? "ชื่อประเภทการลาจำเป็นต้องระบุ" : ""}
               required
             />
             <TextField
               fullWidth
-              label="Description"
+              label="คำอธิบาย"
               variant="outlined"
               margin="dense"
               multiline
@@ -263,10 +263,10 @@ const CreateLeaveType = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setModalOpen(false)} color="secondary">
-              Cancel
+              ยกเลิก
             </Button>
             <Button type="submit" sx={{ backgroundColor: "#50B498", color: "white" }}>
-              {editingId ? "Update" : "Create"}
+              {editingId ? "อัปเดต" : "สร้าง"}
             </Button>
           </DialogActions>
         </form>

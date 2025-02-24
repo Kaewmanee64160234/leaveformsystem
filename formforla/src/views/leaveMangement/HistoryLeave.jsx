@@ -35,7 +35,7 @@ const HistoryLeave = () => {
       const user = storedUser ? JSON.parse(storedUser) : null;
 
       if (!user) {
-        Swal.fire({ icon: "error", title: "Error", text: "Please log in first." });
+        Swal.fire({ icon: "error", title: "ข้อผิดพลาด", text: "กรุณาเข้าสู่ระบบก่อน" });
         return;
       }
 
@@ -48,7 +48,7 @@ const HistoryLeave = () => {
       const data = await response.json();
       setLeaveRequests(data);
     } catch {
-      Swal.fire({ icon: "error", title: "Error", text: "An error occurred while fetching leave history." });
+      Swal.fire({ icon: "error", title: "ข้อผิดพลาด", text: "เกิดข้อผิดพลาดขณะดึงข้อมูลประวัติการลา" });
     } finally {
       setLoading(false);
     }
@@ -60,8 +60,8 @@ const HistoryLeave = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
-        Leave History
+      <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
+        ประวัติการลา
       </Typography>
 
       <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
@@ -74,14 +74,14 @@ const HistoryLeave = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#50B498" }}>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>ID</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Leave Type</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Start Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>End Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Total Days</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Reason</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Status</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Approved By</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>ID</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>ประเภทการลา</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>วันที่เริ่ม</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>วันที่สิ้นสุด</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>จำนวนวัน</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>เหตุผล</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>สถานะ</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>อนุมัติโดย</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -92,7 +92,7 @@ const HistoryLeave = () => {
                     <TableCell>{formatDate(request.start_date)}</TableCell>
                     <TableCell>{formatDate(request.end_date)}</TableCell>
                     <TableCell>
-                      {Math.ceil((new Date(request.end_date) - new Date(request.start_date)) / (1000 * 60 * 60 * 24)) + 1} days
+                      {Math.ceil((new Date(request.end_date) - new Date(request.start_date)) / (1000 * 60 * 60 * 24)) + 1} วัน
                     </TableCell>
                     <TableCell>{request.reason}</TableCell>
                     {/* ✅ Status Styling with Colors */}
@@ -111,7 +111,7 @@ const HistoryLeave = () => {
                         }}
                       />
                     </TableCell>
-                    <TableCell>{request.approved_by || "Pending"}</TableCell>
+                    <TableCell>{request.approved_by || "รอดำเนินการ"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -119,7 +119,7 @@ const HistoryLeave = () => {
           </TableContainer>
         ) : (
           <Typography textAlign="center" color="gray">
-            No leave requests found.
+            ไม่พบคำขอลา
           </Typography>
         )}
       </Paper>

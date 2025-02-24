@@ -27,10 +27,10 @@ const HomePage = () => {
           }}
         >
           <Typography variant="h3" fontWeight="bold">
-            Welcome to the Leave Management System
+            ยินดีต้อนรับสู่ระบบจัดการการลา
           </Typography>
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Manage employee leave requests easily and efficiently.
+            จัดการคำขอลาของพนักงานได้อย่างง่ายดายและมีประสิทธิภาพ
           </Typography>
 
           {/* Navigation Buttons */}
@@ -47,7 +47,7 @@ const HomePage = () => {
               }}
               onClick={() => navigate("/create-leave-request")}
             >
-              Request Leave
+              ขอการลา
             </Button>
             <Button
               variant="contained"
@@ -59,7 +59,7 @@ const HomePage = () => {
               }}
               onClick={() => navigate("/history-leave")}
             >
-              View History
+              ดูประวัติการลา
             </Button>
           </Box>
         </Box>
@@ -68,7 +68,7 @@ const HomePage = () => {
       {/* Footer */}
       <Box textAlign="center" py={3} bgcolor="#50B498" color="white">
         <Typography variant="body2">
-          © 2025 Leave Management System. All rights reserved.
+          © 2025 ระบบจัดการการลา. สงวนลิขสิทธิ์.
         </Typography>
       </Box>
     </Box>

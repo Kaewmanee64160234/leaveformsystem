@@ -39,15 +39,15 @@ const LeaveHistory = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to fetch leave history",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถดึงข้อมูลประวัติการลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while fetching leave history",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะดึงข้อมูลประวัติการลา",
       });
     } finally {
       setLoading(false);
@@ -80,8 +80,8 @@ const LeaveHistory = () => {
       if (response.ok) {
         Swal.fire({
           icon: "success",
-          title: "Updated",
-          text: `Leave request ${newStatus}.`,
+          title: "อัปเดตแล้ว",
+          text: `คำขอลาได้รับการ${newStatus}แล้ว`,
           timer: 2000,
           showConfirmButton: false,
         });
@@ -94,15 +94,15 @@ const LeaveHistory = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to update leave request",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถอัปเดตคำขอลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while updating leave request",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะอัปเดตคำขอลา",
       });
     }
   };
@@ -119,17 +119,17 @@ const LeaveHistory = () => {
       );
 
       if (!response.ok) {
-        console.error("Failed to update leave balance.");
+        console.error("ไม่สามารถอัปเดตยอดวันลาคงเหลือได้");
       }
     } catch (err) {
-      console.error("Error updating leave balance:", err);
+      console.error("เกิดข้อผิดพลาดขณะอัปเดตยอดวันลาคงเหลือ:", err);
     }
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
-        Leave History
+        ประวัติการลา
       </Typography>
 
       <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
@@ -139,20 +139,20 @@ const LeaveHistory = () => {
           </Box>
         ) : leaveRequests.length > 0 ? (
           <Box display="flex" justifyContent="center">
-            <TableContainer sx={{ width: "80%" }}>
+            <TableContainer sx={{ width: "100%" }}>
               <Table>
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#50B498" }}>
                     <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Employee</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Start Date</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>End Date</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total Days</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Balance</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Reason</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Status</TableCell>
-                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>พนักงาน</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ประเภทการลา</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>วันที่เริ่ม</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>วันที่สิ้นสุด</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>จำนวนวัน</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ยอดวันลาคงเหลือ</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>เหตุผล</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>สถานะ</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>การกระทำ</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -163,10 +163,9 @@ const LeaveHistory = () => {
                       <TableCell>{request.leaveType}</TableCell>
                       <TableCell>{formatDate(request.startDate)}</TableCell>
                       <TableCell>{formatDate(request.endDate)}</TableCell>
-                      <TableCell>{calculateTotalDays(request.startDate, request.endDate)} days</TableCell>
-                      <TableCell>{request.leave_balance} days</TableCell>
+                      <TableCell>{calculateTotalDays(request.startDate, request.endDate)} วัน</TableCell>
+                      <TableCell>{request.leave_balance} วัน</TableCell>
                       <TableCell>{request.reason}</TableCell>
-                      {/* ✅ Status Color Code */}
                       <TableCell>
                         <Chip
                           label={request.status}
@@ -197,7 +196,7 @@ const LeaveHistory = () => {
                           size="small"
                           sx={{ mr: 1, color: "white", width: "80px" }}
                         >
-                          Approve
+                          อนุมัติ
                         </Button>
                         <Button
                           onClick={() => updateLeaveStatus(request.id, "rejected", 0, request.user_id)}
@@ -206,7 +205,7 @@ const LeaveHistory = () => {
                           size="small"
                           sx={{ color: "white", width: "80px" }}
                         >
-                          Reject
+                          ปฏิเสธ
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -217,7 +216,7 @@ const LeaveHistory = () => {
           </Box>
         ) : (
           <Typography textAlign="center" color="gray">
-            No pending leave requests.
+            ไม่มีคำขอลาที่รอดำเนินการ
           </Typography>
         )}
       </Paper>

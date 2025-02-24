@@ -36,7 +36,7 @@ const NavBar = () => {
 
   // Menu items for all users
   const baseMenu = [
-    { path: "/", label: "Home", icon: <HomeIcon /> },
+    { path: "/", label: "หน้าหลัก", icon: <HomeIcon /> },
     { path: "/create-leave-request", label: "ใบขอการลา", icon: <AssignmentIcon /> },
     { path: "/history-leave", label: "ประวัติการลา", icon: <HistoryIcon /> },
     { path: "/user-profile", label: "ข้อมูลส่วนตัว", icon: <AccountCircleIcon /> },
@@ -57,7 +57,6 @@ const NavBar = () => {
     localStorage.removeItem("user");
     navigate("/login");
     window.location.reload();
-
   };
 
   return (
@@ -78,7 +77,7 @@ const NavBar = () => {
 
           {/* 📌 Title */}
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-            Leave Management
+            ระบบจัดการการลา
           </Typography>
 
           {/* 👤 User Menu */}
@@ -145,7 +144,7 @@ const NavBar = () => {
                 "&:hover": { backgroundColor: "#d32f2f" },
               }}
             >
-              <LogoutIcon sx={{ mr: 1 }} /> Logout
+              <LogoutIcon sx={{ mr: 1 }} /> ออกจากระบบ
             </Button>
           </Box>
         </Box>

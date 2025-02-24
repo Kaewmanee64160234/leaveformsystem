@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { Email, Work, CalendarToday } from "@mui/icons-material";
 
-
 const UserProfile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +23,7 @@ const UserProfile = () => {
         const userData = storedUser ? JSON.parse(storedUser) : null;
 
         if (!userData) {
-          alert("Please log in first.");
+          alert("กรุณาเข้าสู่ระบบก่อน");
           return;
         }
 
@@ -34,11 +33,11 @@ const UserProfile = () => {
         if (response.ok) {
           setUser(data);
         } else {
-          alert(data.error || "Failed to fetch user profile.");
+          alert(data.error || "ไม่สามารถดึงข้อมูลโปรไฟล์ผู้ใช้ได้");
         }
       } catch (err) {
         console.error(err);
-        alert("An error occurred while fetching user profile.");
+        alert("เกิดข้อผิดพลาดขณะดึงข้อมูลโปรไฟล์ผู้ใช้");
       } finally {
         setLoading(false);
       }
@@ -88,7 +87,7 @@ const UserProfile = () => {
                   <Paper elevation={3} sx={{ p: 2, display: "flex", alignItems: "center" }}>
                     <Email sx={{ mr: 2, color: "#007bff" }} />
                     <Typography variant="body1">
-                      <strong>Email:</strong> {user?.email}
+                      <strong>อีเมล:</strong> {user?.email}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -97,7 +96,7 @@ const UserProfile = () => {
                   <Paper elevation={3} sx={{ p: 2, display: "flex", alignItems: "center" }}>
                     <Work sx={{ mr: 2, color: "#28a745" }} />
                     <Typography variant="body1">
-                      <strong>Role:</strong> {user?.role}
+                      <strong>บทบาท:</strong> {user?.role}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -106,7 +105,7 @@ const UserProfile = () => {
                   <Paper elevation={3} sx={{ p: 2, display: "flex", alignItems: "center" }}>
                     <CalendarToday sx={{ mr: 2, color: "#ffc107" }} />
                     <Typography variant="body1">
-                      <strong>Leave Balance:</strong> {user?.leave_balance} days
+                      <strong>ยอดคงเหลือการลา:</strong> {user?.leave_balance} วัน
                     </Typography>
                   </Paper>
                 </Grid>

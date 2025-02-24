@@ -26,7 +26,7 @@ const HistoryConfirm = () => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))+1;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
   const [leaveRequests, setLeaveRequests] = useState([]);
@@ -53,15 +53,15 @@ const HistoryConfirm = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to fetch leave history",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถดึงข้อมูลประวัติการลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while fetching leave history",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะดึงข้อมูลประวัติการลา",
       });
     } finally {
       setLoading(false);
@@ -90,8 +90,8 @@ const HistoryConfirm = () => {
       if (response.ok) {
         Swal.fire({
           icon: "success",
-          title: "Updated",
-          text: `Leave request has been ${actionStatus}.`,
+          title: "อัปเดตแล้ว",
+          text: `คำขอลาได้รับการ${actionStatus}แล้ว`,
           timer: 2000,
           showConfirmButton: false,
         });
@@ -100,23 +100,23 @@ const HistoryConfirm = () => {
       } else {
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: data.error || "Failed to update leave request.",
+          title: "ข้อผิดพลาด",
+          text: data.error || "ไม่สามารถอัปเดตคำขอลาได้",
         });
       }
     } catch {
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while updating leave request.",
+        title: "ข้อผิดพลาด",
+        text: "เกิดข้อผิดพลาดขณะอัปเดตคำขอลา",
       });
     }
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
-        Leave History
+      <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
+        ประวัติการลา
       </Typography>
 
       <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
@@ -129,32 +129,27 @@ const HistoryConfirm = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: "#50B498" }}>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>ID</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Leave Type</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Start Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>End Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Total Days</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Reason</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Status</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Actions</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>ID</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>ประเภทการลา</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>วันที่เริ่ม</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>วันที่สิ้นสุด</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>จำนวนวัน</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>เหตุผล</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>สถานะ</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>การกระทำ</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {leaveRequests.map((request,index) => (
+                {leaveRequests.map((request, index) => (
                   <TableRow key={request.id} hover>
-                    <TableCell>{index+1}</TableCell>
+                    <TableCell>{index + 1}</TableCell>
                     <TableCell>{request.leaveType}</TableCell>
-                    <TableCell>
-                      {new Date(request.startDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(request.endDate).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {calculateTotalDays(request.startDate, request.endDate)} days
-                    </TableCell>
+                    <TableCell>{new Date(request.startDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(request.endDate).toLocaleDateString()}</TableCell>
+                    <TableCell>{calculateTotalDays(request.startDate, request.endDate)} วัน</TableCell>
                     <TableCell>{request.reason}</TableCell>
-                    <TableCell> <Chip
+                    <TableCell>
+                      <Chip
                         label={request.status}
                         sx={{
                           backgroundColor:
@@ -166,18 +161,18 @@ const HistoryConfirm = () => {
                           color: "white",
                           fontWeight: "bold",
                         }}
-                      /></TableCell>
+                      />
+                    </TableCell>
                     <TableCell>
-                      {/* If status is "approved", show "Reject" button; otherwise show "Approve" */}
                       {request.status === "approved" ? (
                         <Button
                           onClick={() => handleOpenDialog(request, "rejected")}
                           color="error"
                           variant="contained"
                           size="small"
-                          style={{  width: "80px" }}
+                          style={{ width: "80px" }}
                         >
-                          Reject
+                          ปฏิเสธ
                         </Button>
                       ) : (
                         <Button
@@ -185,10 +180,9 @@ const HistoryConfirm = () => {
                           color="success"
                           variant="contained"
                           size="small"
-                          style={{  width: "80px" }}
-
+                          style={{ width: "80px" }}
                         >
-                          Approve
+                          อนุมัติ
                         </Button>
                       )}
                     </TableCell>
@@ -199,7 +193,7 @@ const HistoryConfirm = () => {
           </TableContainer>
         ) : (
           <Typography textAlign="center" color="gray">
-            No leave requests found.
+            ไม่พบคำขอลา
           </Typography>
         )}
       </Paper>
@@ -219,31 +213,28 @@ const HistoryConfirm = () => {
             fontWeight: "bold",
           }}
         >
-          Confirm to {actionStatus === "approved" ? "Approve" : "Reject"}?
+          ยืนยันการ{actionStatus === "approved" ? "อนุมัติ" : "ปฏิเสธ"}?
         </DialogTitle>
         <DialogContent sx={{ py: 3 }}>
           {selectedRequest && (
             <>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>Leave Type:</strong> {selectedRequest.leaveType}
+                <strong>ประเภทการลา:</strong> {selectedRequest.leaveType}
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>Start Date:</strong>{" "}
-                {new Date(selectedRequest.startDate).toLocaleDateString()}
+                <strong>วันที่เริ่ม:</strong> {new Date(selectedRequest.startDate).toLocaleDateString()}
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>End Date:</strong>{" "}
-                {new Date(selectedRequest.endDate).toLocaleDateString()}
+                <strong>วันที่สิ้นสุด:</strong> {new Date(selectedRequest.endDate).toLocaleDateString()}
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>Total Days:</strong>{" "}
-                {calculateTotalDays(selectedRequest.startDate, selectedRequest.endDate)}
+                <strong>จำนวนวัน:</strong> {calculateTotalDays(selectedRequest.startDate, selectedRequest.endDate)}
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
-                <strong>Reason:</strong> {selectedRequest.reason}
+                <strong>เหตุผล:</strong> {selectedRequest.reason}
               </Typography>
               <Typography variant="body1">
-                <strong>Current Status:</strong> {selectedRequest.status}
+                <strong>สถานะปัจจุบัน:</strong> {selectedRequest.status}
               </Typography>
             </>
           )}
@@ -255,14 +246,14 @@ const HistoryConfirm = () => {
             onClick={handleConfirmStatus}
             sx={{ mr: 2 }}
           >
-            Confirm
+            ยืนยัน
           </Button>
           <Button
             variant="contained"
             color="secondary"
             onClick={() => setSelectedRequest(null)}
           >
-            Cancel
+            ยกเลิก
           </Button>
         </DialogActions>
       </Dialog>
