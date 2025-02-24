@@ -119,17 +119,132 @@ router.get("/user/:id", (req, res) => {
   });
 });
 
+// ✅ Update Leave Request Status (Fixing Balance Update Logic)
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Get the current leave request
+    connection.query(
+      "SELECT user_id, start_date, end_date, status FROM LeaveRequests WHERE id = ?",
+      [id],
+      (err, results) => {
+        if (err || results.length === 0) {
+          console.error("Error fetching leave request:", err);
+          return res
+            .status(500)
+            .json({ error: "Database error or request not found" });
+        }
+
+        const leaveRequest = results[0];
+        const {
+          user_id,
+          start_date,
+          end_date,
+          status: oldStatus,
+        } = leaveRequest;
+
+        const totalDays = calculateLeaveDays(start_date, end_date);
+
+        let balanceUpdateQuery = "";
+        let balanceUpdateParams = [];
+
+
+
+        // ✅ If moving from approved → rejected (restore leave balance)
+        if (oldStatus === "approved" && status === "rejected") {
+          balanceUpdateQuery =
+            "UPDATE Users SET leave_balance = leave_balance + ? WHERE id = ?";
+          balanceUpdateParams = [totalDays, user_id];
+        }
+
+        // ✅ If moving from rejected → approved (deduct leave balance again)
+        else if (oldStatus === "rejected" && status === "approved") {
+          connection.query(
+            "SELECT leave_balance FROM Users WHERE id = ?",
+            [user_id],
+            (err, results) => {
+              if (err) {
+                console.error("Error fetching user balance:", err);
+                return res.status(500).json({ error: "Database error" });
+              }
+
+              const availableBalance = results[0].leave_balance;
+              if (availableBalance < totalDays) {
+                return res.status(400).json({
+                  error: `Insufficient leave balance. You have ${availableBalance} days left.`,
+                });
+              }
+
+              // Deduct balance
+              balanceUpdateQuery =
+                "UPDATE Users SET leave_balance = leave_balance - ? WHERE id = ?";
+              balanceUpdateParams = [totalDays, user_id];
+
+              // Run balance update and status update
+              connection.query(
+                balanceUpdateQuery,
+                balanceUpdateParams,
+                (err) => {
+                  if (err) {
+                    console.error("Error updating leave balance:", err);
+                    return res
+                      .status(500)
+                      .json({ error: "Failed to update leave balance" });
+                  }
+                  updateLeaveStatus();
+                }
+              );
+            }
+          );
+          return;
+        }
+
+        // ✅ If moving from pending → rejected or pending → approved, no balance update needed
+        if (balanceUpdateQuery) {
+          connection.query(balanceUpdateQuery, balanceUpdateParams, (err) => {
+            if (err) {
+              console.error("Error updating leave balance:", err);
+              return res
+                .status(500)
+                .json({ error: "Failed to update leave balance" });
+            }
+            updateLeaveStatus();
+          });
+        } else {
+          updateLeaveStatus();
+        }
+
+        function updateLeaveStatus() {
+          connection.query(
+            "UPDATE LeaveRequests SET status = ? WHERE id = ?",
+            [status, id],
+            (err) => {
+              if (err) {
+                console.error("Error updating leave status:", err);
+                return res
+                  .status(500)
+                  .json({ error: "Failed to update leave status" });
+              }
+              res.json({
+                message: "Leave request and balance updated successfully",
+              });
+            }
+          );
+        }
+      }
+    );
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // ✅ Create a new leave request
 router.post("/", (req, res) => {
-  const {
-    user_id,
-    manager_id,
-    leave_type_id,
-    startDate,
-    endDate,
-    reason,
-    status,
-  } = req.body;
+  const { user_id, manager_id, leave_type_id, startDate, endDate, reason } =
+    req.body;
 
   if (
     !user_id ||
@@ -156,13 +271,12 @@ router.post("/", (req, res) => {
 
       const availableBalance = results[0].leave_balance;
       if (availableBalance < totalDays) {
-        return res
-          .status(400)
-          .json({
-            error: `Insufficient leave balance. You have ${availableBalance} days left.`,
-          });
+        return res.status(400).json({
+          error: `Insufficient leave balance. You have ${availableBalance} days left.`,
+        });
       }
 
+      // Insert leave request
       connection.query(
         "INSERT INTO LeaveRequests (user_id, manager_id, leave_type_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')",
         [user_id, manager_id, leave_type_id, startDate, endDate, reason],
@@ -170,27 +284,12 @@ router.post("/", (req, res) => {
           if (err) {
             console.error("Error inserting leave request:", err);
             return res.status(500).json({ error: "Database error" });
+          } else {
+            // semd response
+            res
+              .status(201)
+              .json({ message: "Leave request created", id: results.insertId });
           }
-
-          connection.query(
-            "UPDATE Users SET leave_balance = leave_balance - ? WHERE id = ?",
-            [totalDays, user_id],
-            (err) => {
-              if (err) {
-                console.error("Error updating leave balance:", err);
-                return res
-                  .status(500)
-                  .json({ error: "Database error updating leave balance" });
-              }
-
-              res
-                .status(201)
-                .json({
-                  message: "Leave request submitted",
-                  id: results.insertId,
-                });
-            }
-          );
         }
       );
     }
@@ -212,100 +311,13 @@ router.get("/user/:id/latest", (req, res) => {
       console.error("Database error:", err);
       return res.status(500).json({ error: "Database error" });
     }
-    
+
     if (results.length > 0) {
       res.json(results[0]); // Return the latest leave request status
     } else {
       res.json(null); // No leave requests found
     }
   });
-});
-
-router.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  try {
-    // Get current leave request details
-    connection.query(
-      "SELECT user_id, start_date, end_date, status FROM LeaveRequests WHERE id = ?",
-      [id],
-      (err, results) => {
-        if (err || results.length === 0) {
-          console.error("Error fetching leave request:", err);
-          return res.status(500).json({ error: "Database error or request not found" });
-        }
-
-        const leaveRequest = results[0];
-        const { user_id, start_date, end_date, status: oldStatus } = leaveRequest;
-
-        // Correctly calculate total leave days (including start & end date)
-        const startDate = new Date(start_date);
-        const endDate = new Date(end_date);
-
-        const totalDays = Math.max(
-          Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) ,
-          1
-        );
-        console.log("Total days:", totalDays);
-        
-
-        let balanceUpdateQuery = "";
-        let balanceUpdateParams = [];
-
-        // If changing from approved → rejected (restore balance)
-        if (oldStatus === "approved" && status === "rejected") {
-          balanceUpdateQuery = "UPDATE Users SET leave_balance = leave_balance + ? WHERE id = ?";
-          balanceUpdateParams = [totalDays, user_id];
-        }
-
-        // If changing from rejected → approved (deduct balance)
-        else if (oldStatus === "rejected" && status === "approved") {
-          balanceUpdateQuery = "UPDATE Users SET leave_balance = leave_balance - ? WHERE id = ?";
-          balanceUpdateParams = [totalDays, user_id];
-        }
-
-        // Run balance update if needed
-        if (balanceUpdateQuery) {
-          connection.query(balanceUpdateQuery, balanceUpdateParams, (err) => {
-            if (err) {
-              console.error("Error updating leave balance:", err);
-              return res.status(500).json({ error: "Failed to update leave balance" });
-            }
-
-            // Update the leave request status
-            connection.query(
-              "UPDATE LeaveRequests SET status = ? WHERE id = ?",
-              [status, id],
-              (err) => {
-                if (err) {
-                  console.error("Error updating leave status:", err);
-                  return res.status(500).json({ error: "Failed to update leave status" });
-                }
-                res.json({ message: "Leave request and balance updated successfully" });
-              }
-            );
-          });
-        } else {
-          // Only update status if no balance change is required
-          connection.query(
-            "UPDATE LeaveRequests SET status = ? WHERE id = ?",
-            [status, id],
-            (err) => {
-              if (err) {
-                console.error("Error updating leave status:", err);
-                return res.status(500).json({ error: "Failed to update leave status" });
-              }
-              res.json({ message: "Leave request updated successfully" });
-            }
-          );
-        }
-      }
-    );
-  } catch (err) {
-    console.error("Server error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
 });
 
 // ✅ Get leave history for a manager (last 24 hours)
