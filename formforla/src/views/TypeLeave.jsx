@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import NavBar from "../components/NavBar";
 import {
   Container,
   Button,
@@ -106,7 +105,6 @@ const CreateLeaveType = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <NavBar />
       <h2 style={{ textAlign: "center", marginBottom: "20px", fontSize: "24px", fontWeight: "bold" }}>
         Manage Leave Types
       </h2>

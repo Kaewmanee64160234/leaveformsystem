@@ -1,10 +1,24 @@
 import { useState, useEffect } from "react";
-import NavBar from "../../components/NavBar";
 import Swal from "sweetalert2";
+import {
+  Container,
+  Paper,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Typography,
+  CircularProgress,
+  Button,
+} from "@mui/material";
 
 const LeaveHistory = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
-  // user_id
+  const [loading, setLoading] = useState(true);
+
+  // Get logged-in user ID
   const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
   const user_id = user ? user.id : null;
 
@@ -16,10 +30,10 @@ const LeaveHistory = () => {
     try {
       const response = await fetch("http://localhost:5000/api/leave-requests?status=pending");
       const data = await response.json();
-      if (response.ok) {
-      const filteredRequests = leaveRequests.filter(request => request.userId !== user_id);
-        setLeaveRequests(filteredRequests);
 
+      if (response.ok) {
+        const filteredRequests = data.filter(request => request.user_id !== user_id);
+        setLeaveRequests(filteredRequests);
       } else {
         Swal.fire({
           icon: "error",
@@ -27,13 +41,14 @@ const LeaveHistory = () => {
           text: data.error || "Failed to fetch leave history",
         });
       }
-    } catch (err) {
-      console.error(err);
+    } catch  {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "An error occurred while fetching leave history",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,8 +96,7 @@ const LeaveHistory = () => {
           text: data.error || "Failed to update leave request",
         });
       }
-    } catch (err) {
-      console.error(err);
+    } catch  {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -111,69 +125,81 @@ const LeaveHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <NavBar />
-      <div className="p-4">
-        <header className="mb-4">
-          <h1 className="text-2xl font-bold">Leave History</h1>
-        </header>
-        <div className="bg-white shadow rounded p-4 overflow-x-auto">
-          {leaveRequests.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left">ID</th>
-                  <th className="px-4 py-2 text-left">Employee</th>
-                  <th className="px-4 py-2 text-left">Leave Type</th>
-                  <th className="px-4 py-2 text-left">Start Date</th>
-                  <th className="px-4 py-2 text-left">End Date</th>
-                  <th className="px-4 py-2 text-left">Total Days</th>
-                  <th className="px-4 py-2 text-left">Leave Balance</th>
-                  <th className="px-4 py-2 text-left">Reason</th>
-                  <th className="px-4 py-2 text-left">Status</th>
-                  <th className="px-4 py-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+        Leave History
+      </Typography>
+
+      <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <CircularProgress />
+          </div>
+        ) : leaveRequests.length > 0 ? (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Employee</TableCell>
+                  <TableCell>Leave Type</TableCell>
+                  <TableCell>Start Date</TableCell>
+                  <TableCell>End Date</TableCell>
+                  <TableCell>Total Days</TableCell>
+                  <TableCell>Leave Balance</TableCell>
+                  <TableCell>Reason</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {leaveRequests.map((request, index) => (
-                  <tr key={request.id}>
-                    <td className="px-4 py-2">{index + 1}</td>
-                    <td className="px-4 py-2">{request.user_name}</td>
-                    <td className="px-4 py-2">{request.leaveType}</td>
-                    <td className="px-4 py-2">{formatDate(request.startDate)}</td>
-                    <td className="px-4 py-2">{formatDate(request.endDate)}</td>
-                    <td className="px-4 py-2">
-                      {calculateTotalDays(request.startDate, request.endDate)} days
-                    </td>
-                    <td className="px-4 py-2">{request.leave_balance} days</td>
-                    <td className="px-4 py-2">{request.reason}</td>
-                    <td className="px-4 py-2">{request.status}</td>
-                    <td className="px-4 py-2">
-                      <button
+                  <TableRow key={request.id} hover>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{request.user_name}</TableCell>
+                    <TableCell>{request.leaveType}</TableCell>
+                    <TableCell>{formatDate(request.startDate)}</TableCell>
+                    <TableCell>{formatDate(request.endDate)}</TableCell>
+                    <TableCell>{calculateTotalDays(request.startDate, request.endDate)} days</TableCell>
+                    <TableCell>{request.leave_balance} days</TableCell>
+                    <TableCell>{request.reason}</TableCell>
+                    <TableCell>{request.status}</TableCell>
+                    <TableCell>
+                      <Button
                         onClick={() =>
-                          updateLeaveStatus(request.id, "approved", calculateTotalDays(request.startDate, request.endDate), request.user_id)
+                          updateLeaveStatus(
+                            request.id,
+                            "approved",
+                            calculateTotalDays(request.startDate, request.endDate),
+                            request.user_id
+                          )
                         }
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded mr-2"
+                        variant="contained"
+                        color="success"
+                        sx={{ mr: 1 }}
                       >
                         Approve
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => updateLeaveStatus(request.id, "rejected", 0, request.user_id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        variant="contained"
+                        color="error"
                       >
                         Reject
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No pending leave requests.</p>
-          )}
-        </div>
-      </div>
-    </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography textAlign="center" color="gray">
+            No pending leave requests.
+          </Typography>
+        )}
+      </Paper>
+    </Container>
   );
 };
 

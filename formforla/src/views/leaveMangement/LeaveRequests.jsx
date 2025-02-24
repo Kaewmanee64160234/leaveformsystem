@@ -1,7 +1,22 @@
-// src/components/LeaveRequests.jsx
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import NavBar from "../../components/NavBar";
+import {
+  Container,
+  Paper,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Typography,
+  CircularProgress,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Grid,
+} from "@mui/material";
 
 const LeaveRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -43,24 +58,15 @@ const LeaveRequests = () => {
 
   // Filter logic: combine free-text search with dropdown filters
   const filteredRequests = requests.filter((req) => {
-    // Search query: check against username, leave type, or reason
     const searchMatch = searchQuery
       ? (req.user_name && req.user_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (req.type_name && req.type_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (req.reason && req.reason.toLowerCase().includes(searchQuery.toLowerCase()))
       : true;
 
-    const statusMatch = filterStatus
-      ? req.status && req.status.toLowerCase() === filterStatus.toLowerCase()
-      : true;
-
-    const typeMatch = filterType
-      ? req.type_name && req.type_name.toLowerCase().includes(filterType.toLowerCase())
-      : true;
-
-    const dateMatch = filterDate
-      ? req.created_at && req.created_at.slice(0, 10) === filterDate
-      : true;
+    const statusMatch = filterStatus ? req.status.toLowerCase() === filterStatus.toLowerCase() : true;
+    const typeMatch = filterType ? req.type_name && req.type_name.toLowerCase().includes(filterType.toLowerCase()) : true;
+    const dateMatch = filterDate ? req.created_at && req.created_at.slice(0, 10) === filterDate : true;
 
     return searchMatch && statusMatch && typeMatch && dateMatch;
   });
@@ -73,97 +79,109 @@ const LeaveRequests = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <NavBar />
-      <div className="p-6">
-        <h2 className="text-3xl font-bold mb-6 text-center">Leave Requests</h2>
-        
-        {/* Filter/Search Section */}
-        <div className="bg-white p-4 rounded shadow mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="text"
-              placeholder="Search by name, type, or reason..."
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+        Leave Requests
+      </Typography>
+
+      {/* Filter/Search Section */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="Search by name, type, or reason..."
+              variant="outlined"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <select
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <Select
+              fullWidth
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              displayEmpty
             >
-              <option value="">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-            <select
+              <MenuItem value="">All Status</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="approved">Approved</MenuItem>
+              <MenuItem value="rejected">Rejected</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <Select
+              fullWidth
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              displayEmpty
             >
-              <option value="">All Leave Types</option>
-              {/* You can dynamically generate these options based on available leave types */}
-              <option value="Vacation">Vacation</option>
-              <option value="Sick">Sick</option>
-              <option value="Personal">Personal</option>
-            </select>
-            <input
+              <MenuItem value="">All Leave Types</MenuItem>
+              <MenuItem value="Vacation">Vacation</MenuItem>
+              <MenuItem value="Sick">Sick</MenuItem>
+              <MenuItem value="Personal">Personal</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
               type="date"
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
-              className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              variant="outlined"
             />
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={clearFilters}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition-colors duration-200"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
+          </Grid>
+        </Grid>
+        <Grid container justifyContent="flex-end" sx={{ mt: 2 }}>
+          <Button variant="contained" color="error" onClick={clearFilters}>
+            Clear Filters
+          </Button>
+        </Grid>
+      </Paper>
 
-        {loading ? (
-          <p className="text-center text-lg">Loading...</p>
-        ) : filteredRequests.length === 0 ? (
-          <p className="text-center text-lg">No leave requests found.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow rounded">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="py-2 px-4 border-b">ID</th>
-                  <th className="py-2 px-4 border-b">Username</th>
-                  <th className="py-2 px-4 border-b">Leave Type</th>
-                  <th className="py-2 px-4 border-b">Start Date</th>
-                  <th className="py-2 px-4 border-b">End Date</th>
-                  <th className="py-2 px-4 border-b">Reason</th>
-                  <th className="py-2 px-4 border-b">Status</th>
-                  <th className="py-2 px-4 border-b">Request Date</th>
-                </tr>
-              </thead>
-              <tbody>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <CircularProgress />
+        </div>
+      ) : filteredRequests.length === 0 ? (
+        <Typography textAlign="center" color="gray">
+          No leave requests found.
+        </Typography>
+      ) : (
+        <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Leave Type</TableCell>
+                  <TableCell>Start Date</TableCell>
+                  <TableCell>End Date</TableCell>
+                  <TableCell>Reason</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Request Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="text-center hover:bg-gray-100">
-                    <td className="py-2 px-4 border-b">{req.id}</td>
-                    <td className="py-2 px-4 border-b">{req.user_name}</td>
-                    <td className="py-2 px-4 border-b">{req.type_name || req.leave_type}</td>
-                    <td className="py-2 px-4 border-b">{req.start_date}</td>
-                    <td className="py-2 px-4 border-b">{req.end_date}</td>
-                    <td className="py-2 px-4 border-b">{req.reason}</td>
-                    <td className="py-2 px-4 border-b capitalize">{req.status}</td>
-                    <td className="py-2 px-4 border-b">{req.created_at && req.created_at.slice(0, 10)}</td>
-                  </tr>
+                  <TableRow key={req.id} hover>
+                    <TableCell>{req.id}</TableCell>
+                    <TableCell>{req.user_name}</TableCell>
+                    <TableCell>{req.type_name || req.leave_type}</TableCell>
+                    <TableCell>{req.start_date}</TableCell>
+                    <TableCell>{req.end_date}</TableCell>
+                    <TableCell>{req.reason}</TableCell>
+                    <TableCell sx={{ textTransform: "capitalize" }}>{req.status}</TableCell>
+                    <TableCell>{req.created_at && req.created_at.slice(0, 10)}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      )}
+    </Container>
   );
 };
 

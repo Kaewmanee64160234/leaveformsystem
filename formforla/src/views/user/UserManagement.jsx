@@ -1,75 +1,101 @@
 import { useEffect, useState } from "react";
-import NavBar from "../../components/NavBar";
+import {
+  Container,
+  Paper,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Typography,
+  TextField,
+  CircularProgress,
+  Box,
+} from "@mui/material";
 
 const UserPage = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
   }, [search]);
 
-  const fetchUsers = () => {
-    fetch(`http://localhost:5000/api/users?search=${search}`)
-      .then(res => res.json())
-      .then(data => setUsers(data))
-      .catch(err => console.error(err));
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/users?search=${search}`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <NavBar />
-      <div className="container mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-6">
-          User Management
-        </h2>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+        User Management
+      </Typography>
 
-        {/* Search Input */}
-        <div className="mb-6 flex justify-center">
-          <input
-            type="text"
-            placeholder="🔍 ค้นหาด้วยชื่อหรืออีเมล..."
-            className="w-1/2 p-3 border rounded-lg"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Search Input */}
+      <Box display="flex" justifyContent="center" sx={{ mb: 3 }}>
+        <TextField
+          label="🔍 ค้นหาด้วยชื่อหรืออีเมล..."
+          variant="outlined"
+          fullWidth
+          sx={{ maxWidth: 500 }}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Box>
 
-        {/* User Table */}
-        <div className="bg-white shadow-lg rounded-lg p-6">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="p-3">ID</th>
-                <th className="p-3">ชื่อ</th>
-                <th className="p-3">อีเมล</th>
-                <th className="p-3">บทบาท</th>
-                <th className="p-3 text-right">วันลาคงเหลือ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-gray-100">
-                    <td className="p-3">{user.id}</td>
-                    <td className="p-3">{user.name}</td>
-                    <td className="p-3">{user.email}</td>
-                    <td className="p-3">{user.role === "employee" ? "พนักงาน" : "ผู้จัดการ"}</td>
-                    <td className="p-3 text-right">{user.leave_balance} วัน</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" className="p-3 text-center">
-                    ไม่พบข้อมูล
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+      {/* User Table */}
+      <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
+        {loading ? (
+          <Box textAlign="center" sx={{ padding: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>ชื่อ</TableCell>
+                  <TableCell>อีเมล</TableCell>
+                  <TableCell>บทบาท</TableCell>
+                  <TableCell align="right">วันลาคงเหลือ</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {users.length > 0 ? (
+                  users.map((user) => (
+                    <TableRow key={user.id} hover>
+                      <TableCell>{user.id}</TableCell>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.role === "employee" ? "พนักงาน" : "ผู้จัดการ"}</TableCell>
+                      <TableCell align="right">{user.leave_balance} วัน</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      ไม่พบข้อมูล
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Paper>
+    </Container>
   );
 };
 

@@ -1,17 +1,32 @@
-// src/components/Register.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  CircularProgress,
+  Box,
+  Link,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 
 const Register = () => {
-  const [name, setName]         = useState("");
-  const [email, setEmail]       = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole]         = useState("employee"); // default role
-  const navigate              = useNavigate();
+  const [role, setRole] = useState("employee");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // Validate username length
     if (name.trim().length < 3) {
@@ -20,17 +35,20 @@ const Register = () => {
         title: "Validation Error",
         text: "Username must be at least 3 characters long.",
       });
+      setLoading(false);
       return;
     }
 
     // Validate password security
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       Swal.fire({
         icon: "error",
         title: "Validation Error",
         text: "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.",
       });
+      setLoading(false);
       return;
     }
 
@@ -40,6 +58,7 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
       });
+
       const data = await response.json();
       if (response.ok) {
         Swal.fire({
@@ -49,7 +68,7 @@ const Register = () => {
           timer: 2000,
           showConfirmButton: false,
         });
-        // Redirect after a short delay to let the user read the message.
+
         setTimeout(() => {
           navigate("/login");
         }, 2000);
@@ -60,81 +79,79 @@ const Register = () => {
           text: data.error || "Registration failed.",
         });
       }
-    } catch (err) {
-      console.error(err);
+    } catch  {
       Swal.fire({
         icon: "error",
         title: "An error occurred",
         text: "Please try again later.",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-light">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-primary p-6 rounded shadow-md w-full max-w-sm"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center text-light">
+    <Container maxWidth="sm" sx={{ mt: 8, display: "flex", justifyContent: "center" }}>
+      <Paper elevation={6} sx={{ padding: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}>
+        <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
           Register
-        </h2>
-        <div className="mb-4">
-          <label className="block text-light">Name</label>
-          <input
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Name"
             type="text"
+            fullWidth
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
             required
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-light">Email</label>
-          <input
+          <TextField
+            label="Email"
             type="email"
+            fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
             required
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-light">Password</label>
-          <input
+          <TextField
+            label="Password"
             type="password"
+            fullWidth
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
             required
           />
-        </div>
-        <div className="mb-4">
-          <label className="block text-light">Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full p-2 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
-            required
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Role</InputLabel>
+            <Select value={role} onChange={(e) => setRole(e.target.value)}>
+              <MenuItem value="employee">Employee</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+            disabled={loading}
           >
-            <option value="employee">Employee</option>
-            <option value="manager">Manager</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-accent hover:bg-secondary text-primary p-2 rounded font-semibold transition-colors duration-200"
-        >
-          Register
-        </button>
-        <p className="mt-4 text-center text-light">
-          Already have an account?{" "}
-          <a href="/login" className="text-secondary underline">
-            Login
-          </a>
-        </p>
-      </form>
-    </div>
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
+          </Button>
+        </form>
+        <Box textAlign="center" sx={{ mt: 2 }}>
+          <Typography variant="body2">
+            Already have an account?{" "}
+            <Link href="/login" color="primary" underline="hover">
+              Login
+            </Link>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

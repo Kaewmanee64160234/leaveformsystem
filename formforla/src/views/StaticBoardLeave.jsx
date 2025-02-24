@@ -1,115 +1,162 @@
 import { useEffect, useState } from "react";
-import NavBar from "../components/NavBar";
+import {
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+} from "@mui/material";
+import { People, TrendingUp, TrendingDown } from "@mui/icons-material";
 
 const StaticBoardLeave = () => {
   const [mostLeaveBalance, setMostLeaveBalance] = useState([]);
   const [leastLeaveBalance, setLeastLeaveBalance] = useState([]);
   const [mostUsedLeaveType, setMostUsedLeaveType] = useState([]);
-  const [ setApprovalStats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/employees/most-leave-balance")
-      .then(res => res.json())
-      .then(data => setMostLeaveBalance(data))
-      .catch(err => console.error(err));
+    const fetchData = async () => {
+      try {
+        const responses = await Promise.all([
+          fetch("http://localhost:5000/api/employees/most-leave-balance"),
+          fetch("http://localhost:5000/api/employees/least-leave-balance"),
+          fetch("http://localhost:5000/api/employees/most-used-leave-type"),
+        ]);
 
-    fetch("http://localhost:5000/api/employees/least-leave-balance")
-      .then(res => res.json())
-      .then(data => setLeastLeaveBalance(data))
-      .catch(err => console.error(err));
+        const [mostBalance, leastBalance, usedLeave] = await Promise.all(responses.map(res => res.json()));
 
-    fetch("http://localhost:5000/api/employees/most-used-leave-type")
-      .then(res => res.json())
-      .then(data => setMostUsedLeaveType(data))
-      .catch(err => console.error(err));
+        setMostLeaveBalance(mostBalance);
+        setLeastLeaveBalance(leastBalance);
+        setMostUsedLeaveType(usedLeave);
+      } catch (error) {
+        console.error("Error fetching leave statistics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    fetch("http://localhost:5000/api/employees/approval-status-count")
-      .then(res => res.json())
-      .then(data => setApprovalStats(data))
-      .catch(err => console.error(err));
+    fetchData();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <NavBar />
-      <div className="container mx-auto px-6 py-12">
-        <h2 className="text-3xl font-bold text-center mb-6">
-          Leave Statistics Board
-        </h2>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4, color: "#50B498" }}>
+        Leave Statistics Board
+      </Typography>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          {/* พนักงานที่มีวันลามากที่สุด */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-center mb-4">
-              พนักงานที่มีวันลามากที่สุด (Top 5)
-            </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="p-2">ชื่อ</th>
-                  <th className="p-2 text-right">วันลา</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mostLeaveBalance.map((emp, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2">{emp.name}</td>
-                    <td className="p-2 text-right">{emp.leave_balance} วัน</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {loading ? (
+        <Box display="flex" justifyContent="center">
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Grid container spacing={4}>
+          {/* Most Leave Balance */}
+          <Grid item xs={12} md={4}>
+            <Card elevation={4} sx={{ borderRadius: 3 }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={2}>
+                  <People sx={{ fontSize: 40, color: "#50B498" }} />
+                  <Typography variant="h6" fontWeight="bold">
+                    Employees with Most Leave Balance
+                  </Typography>
+                </Box>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: "#e8f5e9" }}>
+                        <TableCell>Name</TableCell>
+                        <TableCell align="right">Leave Days</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {mostLeaveBalance.map((emp, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{emp.name}</TableCell>
+                          <TableCell align="right">{emp.leave_balance} days</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
 
-          {/* พนักงานที่เหลือวันลาน้อยที่สุด */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-center mb-4">
-              พนักงานที่เหลือวันลาน้อยที่สุด (Top 5)
-            </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="p-2">ชื่อ</th>
-                  <th className="p-2 text-right">วันลา</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leastLeaveBalance.map((emp, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2">{emp.name}</td>
-                    <td className="p-2 text-right">{emp.leave_balance} วัน</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Least Leave Balance */}
+          <Grid item xs={12} md={4}>
+            <Card elevation={4} sx={{ borderRadius: 3 }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={2}>
+                  <TrendingDown sx={{ fontSize: 40, color: "#ff9800" }} />
+                  <Typography variant="h6" fontWeight="bold">
+                    Employees with Least Leave Balance
+                  </Typography>
+                </Box>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: "#fff3e0" }}>
+                        <TableCell>Name</TableCell>
+                        <TableCell align="right">Leave Days</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {leastLeaveBalance.map((emp, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{emp.name}</TableCell>
+                          <TableCell align="right">{emp.leave_balance} days</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
 
-          {/* ประเภทการลาที่ถูกใช้บ่อยที่สุด */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold text-center mb-4">
-              ประเภทการลาที่ใช้บ่อยสุด (Top 5)
-            </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-200">
-                  <th className="p-2">ประเภท</th>
-                  <th className="p-2 text-right">จำนวนครั้ง</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mostUsedLeaveType.map((type, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2">{type.type_name}</td>
-                    <td className="p-2 text-right">{type.count} ครั้ง</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* Most Used Leave Type */}
+          <Grid item xs={12} md={4}>
+            <Card elevation={4} sx={{ borderRadius: 3 }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={2}>
+                  <TrendingUp sx={{ fontSize: 40, color: "#1976d2" }} />
+                  <Typography variant="h6" fontWeight="bold">
+                    Most Used Leave Type
+                  </Typography>
+                </Box>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: "#e3f2fd" }}>
+                        <TableCell>Type</TableCell>
+                        <TableCell align="right">Times Used</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {mostUsedLeaveType.map((type, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{type.type_name}</TableCell>
+                          <TableCell align="right">{type.count} times</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+    </Container>
   );
 };
 
