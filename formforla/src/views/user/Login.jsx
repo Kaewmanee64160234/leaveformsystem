@@ -26,13 +26,13 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
-      console.log("Response Status:", response.status); // Debugging status
-      console.log("Response:", response); // Check what the server is sending
-  
+
+      console.log("Response Status:", response.status);
+      console.log("Response:", response);
+
       const data = await response.json();
-      console.log("Data received:", data); // Check received data
-  
+      console.log("Data received:", data);
+
       if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
@@ -48,10 +48,21 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   return (
-    <Container maxWidth="sm" sx={{ mt: 8, display: "flex", justifyContent: "center" }}>
-      <Paper elevation={6} sx={{ padding: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}>
+    <Container
+      maxWidth="sm"
+      sx={{
+        height: "100vh", // Full screen height
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{ padding: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}
+      >
         <Typography variant="h5" fontWeight="bold" textAlign="center" gutterBottom>
           Login
         </Typography>

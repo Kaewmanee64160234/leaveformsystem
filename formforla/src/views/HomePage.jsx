@@ -5,13 +5,20 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f0fdf4" }}>
-
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "#f0f0f0",
+      }}
+    >
       <Container maxWidth="md" sx={{ flexGrow: 1, textAlign: "center", mt: 8 }}>
         {/* Main Hero Section */}
         <Box
           sx={{
-            bgcolor: "#50B498",
+            background:
+              "linear-gradient(135deg, #50B498 0%,#468585 100%)", // Gradient effect
             color: "white",
             py: 8,
             px: 4,
@@ -27,11 +34,17 @@ const HomePage = () => {
           </Typography>
 
           {/* Navigation Buttons */}
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
+          <Box
+            sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}
+          >
             <Button
               variant="contained"
               size="large"
-              sx={{ bgcolor: "white", color: "#50B498", "&:hover": { bgcolor: "#e0f2f1" } }}
+              sx={{
+                bgcolor: "white",
+                color: "#50B498",
+                "&:hover": { bgcolor: "#e0f2f1" },
+              }}
               onClick={() => navigate("/create-leave-request")}
             >
               Request Leave
@@ -39,7 +52,11 @@ const HomePage = () => {
             <Button
               variant="contained"
               size="large"
-              sx={{ bgcolor: "white", color: "#50B498", "&:hover": { bgcolor: "#e0f2f1" } }}
+              sx={{
+                bgcolor: "white",
+                color: "#50B498",
+                "&:hover": { bgcolor: "#e0f2f1" },
+              }}
               onClick={() => navigate("/history-leave")}
             >
               View History
@@ -50,7 +67,9 @@ const HomePage = () => {
 
       {/* Footer */}
       <Box textAlign="center" py={3} bgcolor="#50B498" color="white">
-        <Typography variant="body2">© 2025 Leave Management System. All rights reserved.</Typography>
+        <Typography variant="body2">
+          © 2025 Leave Management System. All rights reserved.
+        </Typography>
       </Box>
     </Box>
   );
