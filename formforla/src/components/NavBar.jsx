@@ -27,7 +27,9 @@ const NavBar = () => {
     { path: "/leave-history", label: "คำร้องการลา" },
     { path: "/history-confirm", label: "ประวัติยืนยันการลา" },
     { path: "/type-leave", label: "ประเภทการลา" },
-    { path: "/static-board-leave", label: "สถิติการลา" }
+    { path: "/static-board-leave", label: "สถิติการลา" },
+    // user management
+    {path: "/user-management", label: "จัดการผู้ใช้งาน"}
   ];
 
   const handleLogout = () => {

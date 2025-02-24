@@ -21,6 +21,23 @@ connection.connect((err) => {
   console.log("Connected to the MySQL database.");
 });
 
+// Get all users or search by name/email
+router.get("/", (req, res) => {
+  const { search } = req.query;
+
+  let sql = "SELECT id, name, email, role, leave_balance FROM users";
+  let values = [];
+
+  if (search) {
+    sql += " WHERE name LIKE ? OR email LIKE ?";
+    values.push(`%${search}%`, `%${search}%`);
+  }
+
+  connection.query(sql, values, (err, results) => {
+    if (err) return res.status(500).send(err);
+    res.json(results);
+  });
+});
 // Get list of managers from Users table (role = 'manager')
 router.get("/managers", (req, res) => {
   const query = "SELECT id, name FROM Users WHERE role = ?";

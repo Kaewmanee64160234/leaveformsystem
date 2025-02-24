@@ -11,6 +11,7 @@ import TypeLeave from "./views/TypeLeave";
 import UserProfile from "./views/user/UserProfile";
 import StaticBoardLeave from "./views/StaticBoardLeave";
 import ProtectedRoute from "./views/ProtectedRoute";
+import UserManagement from "./views/user/UserManagement";
 
 function App() {
   return (
@@ -54,6 +55,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["leader", "manager"]}>
               <StaticBoardLeave />
+            </ProtectedRoute>
+          }
+        />
+        {/* ysermanagement */}
+        <Route
+          path="/user-management"
+          element={
+            <ProtectedRoute allowedRoles={["leader", "manager"]}>
+              <UserManagement />
             </ProtectedRoute>
           }
         />

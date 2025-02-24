@@ -87,8 +87,6 @@ router.get("/", (req, res) => {
   });
 });
 
-
-
 // ✅ Get leave history for a specific user
 router.get("/user/:id", (req, res) => {
   const { id } = req.params;
@@ -309,8 +307,6 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
 
 // ✅ Get leave history for a manager (last 24 hours)
 router.get("/history/:manager_id", (req, res) => {
