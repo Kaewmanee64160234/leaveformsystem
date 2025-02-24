@@ -197,6 +197,30 @@ router.post("/", (req, res) => {
   );
 });
 
+router.get("/user/:id/latest", (req, res) => {
+  const { id } = req.params;
+
+  const query = `
+    SELECT status FROM LeaveRequests 
+    WHERE user_id = ? 
+    ORDER BY created_at DESC 
+    LIMIT 1
+  `;
+
+  connection.query(query, [id], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    
+    if (results.length > 0) {
+      res.json(results[0]); // Return the latest leave request status
+    } else {
+      res.json(null); // No leave requests found
+    }
+  });
+});
+
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;

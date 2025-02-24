@@ -61,7 +61,7 @@ const CreateLeaveRequest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     // Validate dates
     if (new Date(startDate) > new Date(endDate)) {
       Swal.fire({
@@ -71,7 +71,7 @@ const CreateLeaveRequest = () => {
       });
       return;
     }
-
+  
     // Retrieve logged-in user
     const storedUser = localStorage.getItem("user");
     const user = storedUser ? JSON.parse(storedUser) : null;
@@ -84,7 +84,7 @@ const CreateLeaveRequest = () => {
       navigate("/login");
       return;
     }
-
+  
     if (!managerId) {
       Swal.fire({
         icon: "error",
@@ -93,27 +93,37 @@ const CreateLeaveRequest = () => {
       });
       return;
     }
-
-    const payload = {
-      user_id: user.id,
-      manager_id: managerId,
-      leave_type_id: leaveType,  // Adjust if needed: your backend might expect numeric IDs.
-      startDate,
-      endDate,
-      reason
-    };
-
+  
     try {
-      // log data
-      console.log(payload);
+      // Step 1: Check if the user has any pending leave requests
+      const checkResponse = await fetch(`http://localhost:5000/api/leave-requests/user/${user.id}/latest`);
+      const latestRequest = await checkResponse.json();
+  
+      if (checkResponse.ok && latestRequest && latestRequest.status === "pending") {
+        Swal.fire({
+          icon: "warning",
+          title: "Pending Request Exists",
+          text: "You already have a pending leave request. Please wait for approval before submitting a new one."
+        });
+        return; // Stop form submission
+      }
+  
+      // Step 2: If no pending request, proceed with submission
+      const payload = {
+        user_id: user.id,
+        manager_id: managerId,
+        leave_type_id: leaveType,
+        startDate,
+        endDate,
+        reason
+      };
+  
       const response = await fetch("http://localhost:5000/api/leave-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      console.log(response);
-
-      
+  
       const data = await response.json();
       if (response.ok) {
         Swal.fire({
@@ -123,6 +133,7 @@ const CreateLeaveRequest = () => {
           timer: 2000,
           showConfirmButton: false
         });
+  
         // Clear form and navigate
         setLeaveType('');
         setManagerId('');
@@ -146,6 +157,7 @@ const CreateLeaveRequest = () => {
       });
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
