@@ -35,6 +35,7 @@ const HistoryLeave = () => {
   
       const data = await response.json();
       console.log(data);
+
       
       setLeaveRequests(data);
     } catch (err) {

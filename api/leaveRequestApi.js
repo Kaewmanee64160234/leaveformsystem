@@ -35,8 +35,8 @@ router.get("/", (req, res) => {
       u.name AS user_name, 
       lr.leave_type_id, 
       lt.type_name AS leaveType, 
-      lr.start_date, 
-      lr.end_date, 
+      lr.start_date as startDate, 
+      lr.end_date as endDate, 
       lr.reason, 
       lr.status, 
       lr.manager_id, 
@@ -66,8 +66,9 @@ router.get("/", (req, res) => {
   }
 
   if (manager_id) {
-    conditions.push("lr.manager_id = ?");
-    params.push(manager_id);
+    // ✅ Ensure manager can see their own leave requests
+    conditions.push("(lr.manager_id = ? OR lr.user_id = ?)");
+    params.push(manager_id, manager_id);
   }
 
   if (conditions.length > 0) {
@@ -85,6 +86,7 @@ router.get("/", (req, res) => {
     res.json(results);
   });
 });
+
 
 
 // ✅ Get leave history for a specific user

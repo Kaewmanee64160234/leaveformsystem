@@ -4,6 +4,9 @@ import Swal from "sweetalert2";
 
 const LeaveHistory = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
+  // user_id
+  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+  const user_id = user ? user.id : null;
 
   useEffect(() => {
     fetchLeaveHistory();
@@ -14,7 +17,9 @@ const LeaveHistory = () => {
       const response = await fetch("http://localhost:5000/api/leave-requests?status=pending");
       const data = await response.json();
       if (response.ok) {
-        setLeaveRequests(data);
+      const filteredRequests = leaveRequests.filter(request => request.userId !== user_id);
+        setLeaveRequests(filteredRequests);
+
       } else {
         Swal.fire({
           icon: "error",
