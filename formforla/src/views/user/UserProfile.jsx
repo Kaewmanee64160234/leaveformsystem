@@ -61,7 +61,7 @@ const UserProfile = () => {
           {/* Profile Header */}
           <Box
             sx={{
-              background: "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
+              background: "linear-gradient(135deg, #50B498 0%,#468585 100%)",
               color: "white",
               textAlign: "center",
               p: 3,

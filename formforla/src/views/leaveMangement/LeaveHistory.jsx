@@ -128,7 +128,7 @@ const LeaveHistory = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
+      <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Leave History
       </Typography>
 
@@ -138,81 +138,83 @@ const LeaveHistory = () => {
             <CircularProgress />
           </Box>
         ) : leaveRequests.length > 0 ? (
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#50B498" }}>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Employee</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Start Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>End Date</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total Days</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Balance</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Reason</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Status</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {leaveRequests.map((request, index) => (
-                  <TableRow key={request.id} hover>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{request.user_name}</TableCell>
-                    <TableCell>{request.leaveType}</TableCell>
-                    <TableCell>{formatDate(request.startDate)}</TableCell>
-                    <TableCell>{formatDate(request.endDate)}</TableCell>
-                    <TableCell>{calculateTotalDays(request.startDate, request.endDate)} days</TableCell>
-                    <TableCell>{request.leave_balance} days</TableCell>
-                    <TableCell>{request.reason}</TableCell>
-                    {/* ✅ Status Color Code */}
-                    <TableCell>
-                      <Chip
-                        label={request.status}
-                        sx={{
-                          backgroundColor:
-                            request.status === "approved"
-                              ? "#4CAF50" // Green
-                              : request.status === "rejected"
-                              ? "#E57373" // Red
-                              : "#FFA726", // Orange (Pending)
-                          color: "white",
-                          fontWeight: "bold",
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() =>
-                          updateLeaveStatus(
-                            request.id,
-                            "approved",
-                            calculateTotalDays(request.startDate, request.endDate),
-                            request.user_id
-                          )
-                        }
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        sx={{ mr: 1, color: "white", width: "80px" }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        onClick={() => updateLeaveStatus(request.id, "rejected", 0, request.user_id)}
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        sx={{ color: "white", width: "80px" }}
-                      >
-                        Reject
-                      </Button>
-                    </TableCell>
+          <Box display="flex" justifyContent="center">
+            <TableContainer sx={{ width: "80%" }}>
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#50B498" }}>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Employee</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Start Date</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>End Date</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total Days</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Balance</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Reason</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Status</TableCell>
+                    <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {leaveRequests.map((request, index) => (
+                    <TableRow key={request.id} hover>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{request.user_name}</TableCell>
+                      <TableCell>{request.leaveType}</TableCell>
+                      <TableCell>{formatDate(request.startDate)}</TableCell>
+                      <TableCell>{formatDate(request.endDate)}</TableCell>
+                      <TableCell>{calculateTotalDays(request.startDate, request.endDate)} days</TableCell>
+                      <TableCell>{request.leave_balance} days</TableCell>
+                      <TableCell>{request.reason}</TableCell>
+                      {/* ✅ Status Color Code */}
+                      <TableCell>
+                        <Chip
+                          label={request.status}
+                          sx={{
+                            backgroundColor:
+                              request.status === "approved"
+                                ? "#4CAF50" // Green
+                                : request.status === "rejected"
+                                ? "#E57373" // Red
+                                : "#FFA726", // Orange (Pending)
+                            color: "white",
+                            fontWeight: "bold",
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() =>
+                            updateLeaveStatus(
+                              request.id,
+                              "approved",
+                              calculateTotalDays(request.startDate, request.endDate),
+                              request.user_id
+                            )
+                          }
+                          variant="contained"
+                          color="success"
+                          size="small"
+                          sx={{ mr: 1, color: "white", width: "80px" }}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => updateLeaveStatus(request.id, "rejected", 0, request.user_id)}
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          sx={{ color: "white", width: "80px" }}
+                        >
+                          Reject
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
         ) : (
           <Typography textAlign="center" color="gray">
             No pending leave requests.
