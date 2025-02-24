@@ -15,6 +15,8 @@ import UserManagement from "./views/user/UserManagement";
 
 function App() {
   return (
+
+        <div style={{ minHeight: "100vh", width: "100%", overflowX: "hidden" }}>
     <Router>
       <Routes>
         {/* Public Routes (No Navbar) */}
@@ -72,6 +74,7 @@ function App() {
         </Route>
       </Routes>
     </Router>
+    </div>
   );
 }
 
