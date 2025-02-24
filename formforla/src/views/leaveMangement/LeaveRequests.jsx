@@ -80,7 +80,7 @@ const LeaveRequests = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Leave Requests
       </Typography>
 

@@ -26,22 +26,29 @@ const Login = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
+  
+      console.log("Response Status:", response.status); // Debugging status
+      console.log("Response:", response); // Check what the server is sending
+  
       const data = await response.json();
+      console.log("Data received:", data); // Check received data
+  
       if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         navigate("/");
+        window.location.reload();
       } else {
         alert(data.error || "Login failed");
       }
-    } catch  {
+    } catch (error) {
+      console.error("Error during login:", error);
       alert("An error occurred");
     } finally {
       setLoading(false);
     }
   };
-
+  
   return (
     <Container maxWidth="sm" sx={{ mt: 8, display: "flex", justifyContent: "center" }}>
       <Paper elevation={6} sx={{ padding: 4, width: "100%", maxWidth: 400, borderRadius: 2 }}>

@@ -38,17 +38,16 @@ const UserPage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         User Management
       </Typography>
 
-      {/* Search Input */}
-      <Box display="flex" justifyContent="center" sx={{ mb: 3 }}>
+      {/* Search Input - Aligned Left */}
+      <Box display="flex" justifyContent="flex-start" sx={{ mb: 2 }}>
         <TextField
-          label="🔍 ค้นหาด้วยชื่อหรืออีเมล..."
+          label="ค้นหาด้วยชื่อหรืออีเมล..."
           variant="outlined"
-          fullWidth
-          sx={{ maxWidth: 500 }}
+          sx={{ width: 350 }}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -61,25 +60,34 @@ const UserPage = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer>
+          <TableContainer sx={{ borderRadius: "8px", overflow: "hidden" }}>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>ชื่อ</TableCell>
-                  <TableCell>อีเมล</TableCell>
-                  <TableCell>บทบาท</TableCell>
-                  <TableCell align="right">วันลาคงเหลือ</TableCell>
+                <TableRow sx={{ backgroundColor: "#50B498" }}>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>ชื่อ</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>อีเมล</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>บทบาท</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }} align="right">
+                    วันลาคงเหลือ
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {users.length > 0 ? (
-                  users.map((user) => (
-                    <TableRow key={user.id} hover>
-                      <TableCell>{user.id}</TableCell>
+                  users.map((user, index) => (
+                    <TableRow key={user.id} hover sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f8f9fa" } }}>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.role === "employee" ? "พนักงาน" : "ผู้จัดการ"}</TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: "bold",
+                          color: user.role === "employee" ? "#1976d2" : "#d32f2f",
+                        }}
+                      >
+                        {user.role === "employee" ? "พนักงาน" : "ผู้จัดการ"}
+                      </TableCell>
                       <TableCell align="right">{user.leave_balance} วัน</TableCell>
                     </TableRow>
                   ))

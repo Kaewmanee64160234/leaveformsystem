@@ -11,6 +11,8 @@ import {
   TableBody,
   Typography,
   CircularProgress,
+  Box,
+  Chip,
 } from "@mui/material";
 
 const HistoryLeave = () => {
@@ -45,7 +47,7 @@ const HistoryLeave = () => {
 
       const data = await response.json();
       setLeaveRequests(data);
-    } catch  {
+    } catch {
       Swal.fire({ icon: "error", title: "Error", text: "An error occurred while fetching leave history." });
     } finally {
       setLoading(false);
@@ -58,28 +60,28 @@ const HistoryLeave = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Leave History
       </Typography>
 
       <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "20px" }}>
+          <Box textAlign="center" py={3}>
             <CircularProgress />
-          </div>
+          </Box>
         ) : leaveRequests.length > 0 ? (
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Leave Type</TableCell>
-                  <TableCell>Start Date</TableCell>
-                  <TableCell>End Date</TableCell>
-                  <TableCell>Total Days</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Approved By</TableCell>
+                <TableRow sx={{ backgroundColor: "#50B498" }}>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>ID</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Leave Type</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Start Date</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>End Date</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Total Days</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Reason</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Status</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" ,textAlign:'center'}}>Approved By</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -93,7 +95,22 @@ const HistoryLeave = () => {
                       {Math.ceil((new Date(request.end_date) - new Date(request.start_date)) / (1000 * 60 * 60 * 24)) + 1} days
                     </TableCell>
                     <TableCell>{request.reason}</TableCell>
-                    <TableCell>{request.status}</TableCell>
+                    {/* ✅ Status Styling with Colors */}
+                    <TableCell>
+                      <Chip
+                        label={request.status}
+                        sx={{
+                          backgroundColor:
+                            request.status === "approved"
+                              ? "#4CAF50" // Green
+                              : request.status === "rejected"
+                              ? "#E57373" // Red
+                              : "#FFA726", // Orange (Pending)
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      />
+                    </TableCell>
                     <TableCell>{request.approved_by || "Pending"}</TableCell>
                   </TableRow>
                 ))}

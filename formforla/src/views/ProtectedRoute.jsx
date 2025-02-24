@@ -1,22 +1,25 @@
-// src/components/ProtectedRoute.jsx
-import "react";
-import PropTypes from "prop-types";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import PropTypes from 'prop-types';
 
-const ProtectedRoute = ({ allowedRoles, children }) => {
+const ProtectedRoute = ({ allowedRoles }) => {
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
+  const location = useLocation();
 
-  if (!user || !allowedRoles.includes(user.role)) {
-    // Redirect to home (or login) if user is not allowed.
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Redirect to home if the role is not allowed
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return <Outlet />;
 };
 ProtectedRoute.propTypes = {
   allowedRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
-  children: PropTypes.node.isRequired,
 };
 
 export default ProtectedRoute;

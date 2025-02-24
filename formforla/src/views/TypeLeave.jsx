@@ -16,7 +16,12 @@ import {
   DialogActions,
   TextField,
   CircularProgress,
+  Typography,
+  Box,
+  IconButton,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const CreateLeaveType = () => {
   const [leaveTypes, setLeaveTypes] = useState([]);
@@ -24,6 +29,8 @@ const CreateLeaveType = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [typeName, setTypeName] = useState("");
   const [description, setDescription] = useState("");
+  const [typeNameError, setTypeNameError] = useState(false);
+  const [editingId, setEditingId] = useState(null); // Stores the ID when editing
 
   // Fetch leave types
   const fetchLeaveTypes = async () => {
@@ -54,43 +61,49 @@ const CreateLeaveType = () => {
     fetchLeaveTypes();
   }, []);
 
-  // Handle modal form submission
+  // Handle Create or Edit
   const handleModalSubmit = async (e) => {
     e.preventDefault();
 
     if (!typeName.trim()) {
-      Swal.fire({
-        icon: "error",
-        title: "Validation Error",
-        text: "Leave type name is required.",
-      });
+      setTypeNameError(true);
       return;
+    } else {
+      setTypeNameError(false);
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/leave-types", {
-        method: "POST",
+      const url = editingId
+        ? `http://localhost:5000/api/leave-types/${editingId}`
+        : "http://localhost:5000/api/leave-types";
+      const method = editingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type_name: typeName, description }),
       });
+
       const data = await response.json();
       if (response.ok) {
         Swal.fire({
           icon: "success",
-          title: "Success",
-          text: "Leave type created successfully.",
+          title: editingId ? "Updated" : "Created",
+          text: `Leave type ${editingId ? "updated" : "created"} successfully.`,
           timer: 2000,
           showConfirmButton: false,
         });
+
         setTypeName("");
         setDescription("");
+        setEditingId(null);
         setModalOpen(false);
         fetchLeaveTypes();
       } else {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: data.error || "Creation failed.",
+          text: data.error || "Failed to process request.",
         });
       }
     } catch (err) {
@@ -98,49 +111,120 @@ const CreateLeaveType = () => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "An error occurred while creating the leave type.",
+        text: "An error occurred while processing the request.",
       });
+    }
+  };
+
+  // Handle Edit Click
+  const handleEditClick = (leaveType) => {
+    setEditingId(leaveType.id);
+    setTypeName(leaveType.type_name);
+    setDescription(leaveType.description);
+    setModalOpen(true);
+  };
+
+  // Handle Delete
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to undo this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#50B498",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(`http://localhost:5000/api/leave-types/${id}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          Swal.fire({
+            icon: "success",
+            title: "Deleted!",
+            text: "Leave type has been deleted.",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+
+          fetchLeaveTypes();
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Failed to delete leave type.",
+          });
+        }
+      } catch {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "An error occurred while deleting leave type.",
+        });
+      }
     }
   };
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <h2 style={{ textAlign: "center", marginBottom: "20px", fontSize: "24px", fontWeight: "bold" }}>
+      <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Manage Leave Types
-      </h2>
+      </Typography>
 
       {/* Button to open modal */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: "#50B498", color: "white" }}
+          onClick={() => {
+            setEditingId(null);
+            setTypeName("");
+            setDescription("");
+            setModalOpen(true);
+          }}
+        >
           + Add Leave Type
         </Button>
-      </div>
+      </Box>
 
       {/* Leave Type Table */}
       {loading ? (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <Box textAlign="center" mt={3}>
           <CircularProgress />
-        </div>
+        </Box>
       ) : leaveTypes.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#777" }}>No leave types found.</p>
+        <Typography textAlign="center" color="gray">
+          No leave types found.
+        </Typography>
       ) : (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ boxShadow: 3, borderRadius: 2 }}>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Leave Type Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Created At</TableCell>
+              <TableRow sx={{ backgroundColor: "#50B498" }}>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type Name</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Description</TableCell>
+                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {leaveTypes.map((lt) => (
+              {leaveTypes.map((lt, index) => (
                 <TableRow key={lt.id} hover>
-                  <TableCell>{lt.id}</TableCell>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>{lt.type_name}</TableCell>
                   <TableCell>{lt.description}</TableCell>
-                  <TableCell>{lt.created_at && lt.created_at.slice(0, 10)}</TableCell>
+                  <TableCell>
+                    <IconButton color="primary" onClick={() => handleEditClick(lt)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => handleDelete(lt.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -148,11 +232,13 @@ const CreateLeaveType = () => {
         </TableContainer>
       )}
 
-      {/* Modal for creating a new leave type */}
+      {/* Modal for creating/editing a leave type */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)}>
-        <DialogTitle>Add New Leave Type</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleModalSubmit}>
+        <DialogTitle textAlign="center" sx={{ fontWeight: "bold", backgroundColor: "#50B498", color: "white" }}>
+          {editingId ? "Edit Leave Type" : "Add New Leave Type"}
+        </DialogTitle>
+        <form onSubmit={handleModalSubmit}>
+          <DialogContent>
             <TextField
               fullWidth
               label="Leave Type Name"
@@ -160,6 +246,8 @@ const CreateLeaveType = () => {
               margin="dense"
               value={typeName}
               onChange={(e) => setTypeName(e.target.value)}
+              error={typeNameError}
+              helperText={typeNameError ? "Leave type name is required." : ""}
               required
             />
             <TextField
@@ -172,16 +260,16 @@ const CreateLeaveType = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setModalOpen(false)} color="secondary">
-            Cancel
-          </Button>
-          <Button type="submit" onClick={handleModalSubmit} color="primary" variant="contained">
-            Create
-          </Button>
-        </DialogActions>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setModalOpen(false)} color="secondary">
+              Cancel
+            </Button>
+            <Button type="submit" sx={{ backgroundColor: "#50B498", color: "white" }}>
+              {editingId ? "Update" : "Create"}
+            </Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </Container>
   );

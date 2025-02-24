@@ -12,6 +12,8 @@ import {
   Typography,
   CircularProgress,
   Button,
+  Chip,
+  Box,
 } from "@mui/material";
 
 const LeaveHistory = () => {
@@ -41,7 +43,7 @@ const LeaveHistory = () => {
           text: data.error || "Failed to fetch leave history",
         });
       }
-    } catch  {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -96,7 +98,7 @@ const LeaveHistory = () => {
           text: data.error || "Failed to update leave request",
         });
       }
-    } catch  {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -126,30 +128,30 @@ const LeaveHistory = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Leave History
       </Typography>
 
       <Paper sx={{ padding: 2, boxShadow: 3, borderRadius: 2 }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "20px" }}>
+          <Box textAlign="center" py={3}>
             <CircularProgress />
-          </div>
+          </Box>
         ) : leaveRequests.length > 0 ? (
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Employee</TableCell>
-                  <TableCell>Leave Type</TableCell>
-                  <TableCell>Start Date</TableCell>
-                  <TableCell>End Date</TableCell>
-                  <TableCell>Total Days</TableCell>
-                  <TableCell>Leave Balance</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
+                <TableRow sx={{ backgroundColor: "#50B498" }}>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Employee</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Type</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Start Date</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>End Date</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Total Days</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Leave Balance</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Reason</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Status</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -163,7 +165,22 @@ const LeaveHistory = () => {
                     <TableCell>{calculateTotalDays(request.startDate, request.endDate)} days</TableCell>
                     <TableCell>{request.leave_balance} days</TableCell>
                     <TableCell>{request.reason}</TableCell>
-                    <TableCell>{request.status}</TableCell>
+                    {/* ✅ Status Color Code */}
+                    <TableCell>
+                      <Chip
+                        label={request.status}
+                        sx={{
+                          backgroundColor:
+                            request.status === "approved"
+                              ? "#4CAF50" // Green
+                              : request.status === "rejected"
+                              ? "#E57373" // Red
+                              : "#FFA726", // Orange (Pending)
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Button
                         onClick={() =>
@@ -176,7 +193,8 @@ const LeaveHistory = () => {
                         }
                         variant="contained"
                         color="success"
-                        sx={{ mr: 1 }}
+                        size="small"
+                        sx={{ mr: 1, color: "white", width: "80px" }}
                       >
                         Approve
                       </Button>
@@ -184,6 +202,8 @@ const LeaveHistory = () => {
                         onClick={() => updateLeaveStatus(request.id, "rejected", 0, request.user_id)}
                         variant="contained"
                         color="error"
+                        size="small"
+                        sx={{ color: "white", width: "80px" }}
                       >
                         Reject
                       </Button>

@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Chip,
   Box,
 } from "@mui/material";
 
@@ -114,7 +115,7 @@ const HistoryConfirm = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 4 }}>
+     <Typography variant="h5" fontWeight="bold" textAlign="start" sx={{ mb: 2 }}>
         Leave History
       </Typography>
 
@@ -153,7 +154,19 @@ const HistoryConfirm = () => {
                       {calculateTotalDays(request.startDate, request.endDate)} days
                     </TableCell>
                     <TableCell>{request.reason}</TableCell>
-                    <TableCell>{request.status}</TableCell>
+                    <TableCell> <Chip
+                        label={request.status}
+                        sx={{
+                          backgroundColor:
+                            request.status === "approved"
+                              ? "#4CAF50" // Green
+                              : request.status === "rejected"
+                              ? "#E57373" // Red
+                              : "#FFA726", // Orange (Pending)
+                          color: "white",
+                          fontWeight: "bold",
+                        }}
+                      /></TableCell>
                     <TableCell>
                       {/* If status is "approved", show "Reject" button; otherwise show "Approve" */}
                       {request.status === "approved" ? (
@@ -162,6 +175,7 @@ const HistoryConfirm = () => {
                           color="error"
                           variant="contained"
                           size="small"
+                          style={{  width: "80px" }}
                         >
                           Reject
                         </Button>
@@ -171,6 +185,8 @@ const HistoryConfirm = () => {
                           color="success"
                           variant="contained"
                           size="small"
+                          style={{  width: "80px" }}
+
                         >
                           Approve
                         </Button>

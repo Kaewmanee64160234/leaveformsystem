@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./views/user/Login";
 import Register from "./views/user/Register";
@@ -14,66 +14,49 @@ import ProtectedRoute from "./views/ProtectedRoute";
 import UserManagement from "./views/user/UserManagement";
 
 function App() {
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
   return (
+    <div style={{ minHeight: "100vh", width: "100%", overflowX: "hidden" }}>
+      <Router>
+        <Routes>
+          {/* 🔐 Public Routes (Login & Register) */}
+          {!user ? (
+            <>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </>
+          ) : (
+            <>
+              {/* 🔄 Redirect logged-in users away from login/register */}
+              <Route path="/login" element={<Navigate to="/" replace />} />
+              <Route path="/register" element={<Navigate to="/" replace />} />
+            </>
+          )}
 
-        <div style={{ minHeight: "100vh", width: "100%", overflowX: "hidden" }}>
-    <Router>
-      <Routes>
-        {/* Public Routes (No Navbar) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+          {/* 🔒 Protected Pages (Require Login) */}
+          {user ? (
+            <Route element={<Layout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/history-leave" element={<HistoryLeave />} />
+              <Route path="/create-leave-request" element={<CreateLeaveRequest />} />
+              <Route path="/user-profile" element={<UserProfile />} />
 
-        {/* Protected Pages (With Navbar) */}
-        <Route element={<Layout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/history-leave" element={<HistoryLeave />} />
-          <Route path="/create-leave-request" element={<CreateLeaveRequest />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-
-          {/* Leader-only Routes */}
-          <Route
-            path="/leave-history"
-            element={
-              <ProtectedRoute allowedRoles={["leader", "manager"]}>
-                <LeaveHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/history-confirm"
-            element={
-              <ProtectedRoute allowedRoles={["leader", "manager"]}>
-                <HistoryConfirm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/type-leave"
-            element={
-              <ProtectedRoute allowedRoles={["leader", "manager"]}>
-                <TypeLeave />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/static-board-leave"
-            element={
-              <ProtectedRoute allowedRoles={["leader", "manager"]}>
-                <StaticBoardLeave />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/user-management"
-            element={
-              <ProtectedRoute allowedRoles={["leader", "manager"]}>
-                <UserManagement />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-      </Routes>
-    </Router>
+              {/* 👥 Leader/Manager-Only Routes */}
+              <Route element={<ProtectedRoute allowedRoles={["leader", "manager"]} />}>
+                <Route path="/leave-history" element={<LeaveHistory />} />
+                <Route path="/history-confirm" element={<HistoryConfirm />} />
+                <Route path="/type-leave" element={<TypeLeave />} />
+                <Route path="/static-board-leave" element={<StaticBoardLeave />} />
+                <Route path="/user-management" element={<UserManagement />} />
+              </Route>
+            </Route>
+          ) : (
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          )}
+        </Routes>
+      </Router>
     </div>
   );
 }
